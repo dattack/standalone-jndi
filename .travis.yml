@@ -1,11 +1,15 @@
 language: java
-before_install:
-  - pip install --user codecov
+jdk:
+  - oraclejdk8
+  - oraclejdk7
+sudo: false
+
 after_success:
-  - codecov
+  - bash <(curl -s https://codecov.io/bash)
+
 notifications:
   email:
     recipients:
-      - cvarela@dattack.com
+      - dev@dattack.com
     on_success: always
     on_failure: always
