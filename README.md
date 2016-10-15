@@ -5,11 +5,10 @@
 [![codecov](https://codecov.io/gh/dattack/standalone-jndi/branch/master/graph/badge.svg)](https://codecov.io/gh/dattack/standalone-jndi)
 [![license](https://img.shields.io/:license-Apache-blue.svg?style=plastic-square)](LICENSE.md)
 
-jtoolbox
+Standalone JNDI
 =======
 
-jToolbox is a set of utility classes that simplify the programming of Java
-code that can be used from any project.
+A JNDI implementation to use with your standalone applications.
 
 Where can i get the latest release?
 =========
@@ -53,7 +52,7 @@ If you use Maven, include this dependency in your pom.xml:
 ```xml
   <dependency>
     <groupId>com.dattack</groupId>
-    <artifactId>jtoolbox</artifactId>
+    <artifactId>standalone-jndi</artifactId>
     <version>x.y.z</version>
   </dependency>
 ```
