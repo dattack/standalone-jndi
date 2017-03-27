@@ -7,7 +7,7 @@
         <version>1</version>
     </parent>
     <artifactId>standalone-jndi</artifactId>
-    <version>0.1-SNAPSHOT</version>
+    <version>0.1</version>
     <name>Standalone JNDI</name>
     <description>A JNDI implementation to use with your standalone applications.</description>
     <url>http://www.dattack.com</url>
@@ -72,12 +72,12 @@
         <dependency>
             <groupId>com.dattack</groupId>
             <artifactId>jtoolbox-commons-configuration</artifactId>
-            <version>${jtoolbox.version}</version>
+            <version>0.1</version>
         </dependency>
         <dependency>
             <groupId>com.dattack</groupId>
             <artifactId>jtoolbox-core</artifactId>
-            <version>${jtoolbox.version}</version>
+            <version>0.1</version>
         </dependency>
         <dependency>
             <groupId>commons-dbcp</groupId>
