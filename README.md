@@ -4,45 +4,12 @@
 [![CircleCI](https://circleci.com/gh/dattack/standalone-jndi.svg?style=svg)](https://circleci.com/gh/dattack/standalone-jndi)
 [![codecov](https://codecov.io/gh/dattack/standalone-jndi/branch/master/graph/badge.svg)](https://codecov.io/gh/dattack/standalone-jndi)
 [![license](https://img.shields.io/:license-Apache-blue.svg?style=plastic-square)](LICENSE.md)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.dattack/standalone-jndi/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.dattack/standalone-jndi)
 
 Standalone JNDI
 =======
 
 A JNDI implementation to use with your standalone applications.
-
-Where can i get the latest release?
-=========
-
-You can pull it from the Dattack maven repository:
-
-```xml
-  <repositories>
-    <repository>
-      <id>public-dattack-releases</id>
-      <name>Dattack Releases</name>
-      <url>http://maven.dattack.com/release</url>
-      <releases>
-        <updatePolicy>never</updatePolicy>
-        <checksumPolicy>fail</checksumPolicy>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>public-dattack-snapshots</id>
-      <name>Dattack Snapshots</name>
-      <url>http://maven.dattack.com/snapshot</url>
-      <releases>
-        <enabled>false</enabled>
-      </releases>
-      <snapshots>
-        <updatePolicy>always</updatePolicy>
-        <checksumPolicy>warn</checksumPolicy>
-      </snapshots>
-    </repository>
-  </repositories>
-```
 
 Try it out
 =========
@@ -63,9 +30,9 @@ an appropriate release tag.
 
 Bugs and Feedback
 =========
-For bugs and discussions please use the [Github Issues](https://github.com/dattack/standalone-jndi/issues). 
-If you have other questions, please contact by [email](mailto:dev@dattack.com) 
-or [@dattackteam](https://twitter.com/dattackteam) 
+For bugs and discussions please use the [Github Issues](https://github.com/dattack/standalone-jndi/issues).
+If you have other questions, please contact by [email](mailto:dev@dattack.com)
+or [@dattackteam](https://twitter.com/dattackteam)
 
 
 Copyright and license
@@ -73,13 +40,13 @@ Copyright and license
 Copyright 2016 Dattack Team
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use
-this work except in compliance with the License. You may obtain a copy of the 
+this work except in compliance with the License. You may obtain a copy of the
 License in the LICENSE file, or at:
 
 http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software distributed
-under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR 
+under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
 CONDITIONS OF ANY KIND, either express or implied. See the License for the
 specific language governing permissions and limitations under the License.
 
