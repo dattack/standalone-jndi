@@ -18,6 +18,8 @@ import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.naming.ConfigurationException;
 import javax.naming.Context;
@@ -26,13 +28,10 @@ import javax.naming.spi.InitialContextFactory;
 
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.CompositeConfiguration;
-import org.apache.commons.configuration.EnvironmentConfiguration;
 import org.apache.commons.configuration.PropertyConverter;
-import org.apache.commons.configuration.SystemConfiguration;
 import org.apache.commons.lang.ObjectUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import com.dattack.jtoolbox.commons.configuration.ConfigurationUtil;
 import com.dattack.jtoolbox.io.FilesystemUtils;
 import com.dattack.naming.loader.NamingLoader;
 
@@ -44,7 +43,7 @@ import com.dattack.naming.loader.NamingLoader;
  */
 public final class StandaloneContextFactory implements InitialContextFactory {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(StandaloneContextFactory.class);
+    private static final Logger LOGGER = Logger.getLogger(StandaloneContextFactory.class.getName());
 
     private static final String CLASSPATH_DIRECTORY_PROPERTY = StandaloneContextFactory.class.getName()
             + ".classpath.directory";
@@ -57,7 +56,7 @@ public final class StandaloneContextFactory implements InitialContextFactory {
     private static Context createInitialContext(final File dir, final Map<?, ?> environment,
             final CompositeConfiguration configuration) throws NamingException {
 
-        LOGGER.debug("Scanning directory '{}' for JNDI resources.", dir);
+        LOGGER.log(Level.FINEST, "Scanning directory '{0}' for JNDI resources.", dir);
         try {
             final StandaloneContext ctx = new StandaloneContext(environment);
             final NamingLoader loader = new NamingLoader();
@@ -65,7 +64,7 @@ public final class StandaloneContextFactory implements InitialContextFactory {
                     .locateFiles(configuration.getList(CLASSPATH_DIRECTORY_PROPERTY));
             loader.loadDirectory(dir, ctx, extraClasspath);
 
-            LOGGER.debug("JNDI context is ready");
+            LOGGER.log(Level.FINEST, "JNDI context is ready");
 
             return ctx;
         } catch (final IOException e) {
@@ -80,24 +79,9 @@ public final class StandaloneContextFactory implements InitialContextFactory {
             baseConf.setProperty(ObjectUtils.toString(entry.getKey()), entry.getValue());
         }
 
-        final CompositeConfiguration configuration = new CompositeConfiguration();
-        configuration.addConfiguration(new SystemConfiguration());
-        configuration.addConfiguration(new EnvironmentConfiguration());
+        final CompositeConfiguration configuration = ConfigurationUtil.createEnvSystemConfiguration();
         configuration.addConfiguration(baseConf);
         return configuration;
-    }
-
-    @Override
-    public Context getInitialContext(final Hashtable<?, ?> environment) throws NamingException {
-
-        if (context == null) {
-            synchronized (StandaloneContextFactory.class) {
-                if (context == null) {
-                    context = loadInitialContext(environment);
-                }
-            }
-        }
-        return context;
     }
 
     private static String getResourcesDirectory(final CompositeConfiguration configuration)
@@ -117,18 +101,31 @@ public final class StandaloneContextFactory implements InitialContextFactory {
     private static Context loadInitialContext(final Hashtable<?, ?> environment) // NOPMD by cvarela
             throws NamingException {
 
-        LOGGER.debug("loadInitialContext: {}", environment);
+        LOGGER.log(Level.FINEST, "loadInitialContext: {0}", environment);
         final CompositeConfiguration configuration = getConfiguration(environment);
 
         final Object configDir = getResourcesDirectory(configuration);
 
         final File dir = FilesystemUtils.locateFile(ObjectUtils.toString(configDir));
 
-        if ((dir != null) && dir.exists()) {
+        if (dir != null && dir.exists()) {
             return createInitialContext(dir, environment, configuration);
         }
 
         throw new ConfigurationException(
                 String.format("JNDI configuration error: directory not exists '%s'", configDir));
+    }
+
+    @Override
+    public Context getInitialContext(final Hashtable<?, ?> environment) throws NamingException {
+
+        if (context == null) {
+            synchronized (StandaloneContextFactory.class) {
+                if (context == null) {
+                    context = loadInitialContext(environment);
+                }
+            }
+        }
+        return context;
     }
 }

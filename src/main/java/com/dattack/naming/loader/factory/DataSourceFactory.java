@@ -20,6 +20,7 @@ import java.nio.charset.Charset;
 import java.security.PrivateKey;
 import java.util.Collection;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 import javax.naming.ConfigurationException;
 import javax.naming.NamingException;
@@ -28,13 +29,10 @@ import javax.sql.DataSource;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.configuration.ConfigurationConverter;
-import org.apache.commons.configuration.EnvironmentConfiguration;
 import org.apache.commons.configuration.MapConfiguration;
-import org.apache.commons.configuration.SystemConfiguration;
 import org.apache.commons.dbcp.BasicDataSourceFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import com.dattack.jtoolbox.commons.configuration.ConfigurationUtil;
 import com.dattack.jtoolbox.io.FilesystemUtils;
 import com.dattack.jtoolbox.jdbc.DataSourceClasspathDecorator;
 import com.dattack.jtoolbox.jdbc.SimpleDataSource;
@@ -47,7 +45,7 @@ import com.dattack.jtoolbox.security.RsaUtils;
  */
 public class DataSourceFactory implements ResourceFactory<DataSource> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceFactory.class);
+    private static final Logger LOGGER = Logger.getLogger(DataSourceFactory.class.getName());
 
     private static final String ENCRYPT_PREFIX = "encrypt";
     private static final String PRIVATE_KEY_FILENAME = "privateKey";
@@ -61,9 +59,7 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
     public static final String TYPE = "javax.sql.DataSource";
 
     private static AbstractConfiguration getConfiguration(final Properties properties) {
-        final CompositeConfiguration configuration = new CompositeConfiguration();
-        configuration.addConfiguration(new SystemConfiguration());
-        configuration.addConfiguration(new EnvironmentConfiguration());
+        final CompositeConfiguration configuration = ConfigurationUtil.createEnvSystemConfiguration();
         configuration.addConfiguration(new MapConfiguration(properties));
         return configuration;
     }
