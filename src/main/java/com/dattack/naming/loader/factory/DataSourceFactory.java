@@ -29,11 +29,10 @@ import javax.sql.DataSource;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.configuration.ConfigurationConverter;
-import org.apache.commons.configuration.EnvironmentConfiguration;
 import org.apache.commons.configuration.MapConfiguration;
-import org.apache.commons.configuration.SystemConfiguration;
 import org.apache.commons.dbcp.BasicDataSourceFactory;
 
+import com.dattack.jtoolbox.commons.configuration.ConfigurationUtil;
 import com.dattack.jtoolbox.io.FilesystemUtils;
 import com.dattack.jtoolbox.jdbc.DataSourceClasspathDecorator;
 import com.dattack.jtoolbox.jdbc.SimpleDataSource;
@@ -60,9 +59,7 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
     public static final String TYPE = "javax.sql.DataSource";
 
     private static AbstractConfiguration getConfiguration(final Properties properties) {
-        final CompositeConfiguration configuration = new CompositeConfiguration();
-        configuration.addConfiguration(new SystemConfiguration());
-        configuration.addConfiguration(new EnvironmentConfiguration());
+        final CompositeConfiguration configuration = ConfigurationUtil.createEnvSystemConfiguration();
         configuration.addConfiguration(new MapConfiguration(properties));
         return configuration;
     }
