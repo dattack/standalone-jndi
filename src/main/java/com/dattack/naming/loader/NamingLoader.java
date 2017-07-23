@@ -20,13 +20,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
 
 import org.apache.commons.io.FilenameUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.dattack.naming.loader.factory.ResourceFactory;
 import com.dattack.naming.loader.factory.ResourceFactoryRegistry;
@@ -37,7 +37,7 @@ import com.dattack.naming.loader.factory.ResourceFactoryRegistry;
  */
 public final class NamingLoader {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NamingLoader.class);
+    private static final Logger LOGGER = Logger.getLogger(NamingLoader.class.getName());
 
     private static final String TYPE_KEY = "type";
     private static final String[] EXTENSIONS = new String[] { "properties" };
@@ -48,13 +48,14 @@ public final class NamingLoader {
         final String type = properties.getProperty(TYPE_KEY);
         final ResourceFactory<?> factory = ResourceFactoryRegistry.getFactory(type);
         if (factory == null) {
-            LOGGER.warn("Unable to get a factory for type ''{0}''", type);
+            LOGGER.log(Level.WARNING, "Unable to get a factory for type ''{0}''", type);
             return;
         }
 
         final Object value = factory.getObjectInstance(properties, extraClasspath);
         if (value != null) {
-            LOGGER.info("Binding object to '{}/{}' (type: '{}')", context.getNameInNamespace(), name, type);
+            LOGGER.log(Level.INFO, "Binding object to '{0}/{1}' (type: '{2}')",
+                    new Object[] { context.getNameInNamespace(), name, type });
             execBind(context, name, value);
         }
     }
@@ -64,23 +65,24 @@ public final class NamingLoader {
         Object obj = context.lookup(key);
 
         if (obj instanceof Context) {
-            LOGGER.debug("Destroying context with name '{}'", key);
+            LOGGER.log(Level.FINE, "Destroying context with name '{0}'", key);
             context.destroySubcontext(key);
             obj = null;
         }
 
         if (obj == null) {
-            LOGGER.debug("Executing bind method for '{}'", key);
+            LOGGER.log(Level.FINE, "Executing bind method for '{0}'", key);
             context.bind(key, value);
         } else {
-            LOGGER.debug("Executing rebind method for '{}'", key);
+            LOGGER.log(Level.FINE, "Executing rebind method for '{0}'", key);
             context.rebind(key, value);
         }
     }
 
     /**
-     * Scans a directory hierarchy looking for <code>*.properties</code> files. Creates a subcontext for each directory
-     * in the hierarchy and binds a new resource for each <code>*.properties</code> file with a
+     * Scans a directory hierarchy looking for <code>*.properties</code> files.
+     * Creates a subcontext for each directory in the hierarchy and binds a new
+     * resource for each <code>*.properties</code> file with a
      * <code>ResourceFactory</code> associated.
      *
      *
