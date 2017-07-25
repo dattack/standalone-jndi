@@ -56,7 +56,7 @@ public final class StandaloneContextFactory implements InitialContextFactory {
     private static Context createInitialContext(final File dir, final Map<?, ?> environment,
             final CompositeConfiguration configuration) throws NamingException {
 
-        LOGGER.log(Level.FINEST, "Scanning directory '{0}' for JNDI resources.", dir);
+        LOGGER.log(Level.FINEST, "Scanning directory ''{0}'' for JNDI resources.", dir);
         try {
             final StandaloneContext ctx = new StandaloneContext(environment);
             final NamingLoader loader = new NamingLoader();
@@ -101,7 +101,7 @@ public final class StandaloneContextFactory implements InitialContextFactory {
     private static Context loadInitialContext(final Hashtable<?, ?> environment) // NOPMD by cvarela
             throws NamingException {
 
-        LOGGER.log(Level.FINEST, "loadInitialContext: {0}", environment);
+        LOGGER.log(Level.FINEST, "loadInitialContext: ''{0}''", environment);
         final CompositeConfiguration configuration = getConfiguration(environment);
 
         final Object configDir = getResourcesDirectory(configuration);

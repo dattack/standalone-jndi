@@ -28,8 +28,7 @@ import javax.naming.NamingException;
 import com.dattack.naming.AbstractContext;
 
 /**
- * A generic <tt>Context</tt> designed to be used by standalone applications
- * without a web-container.
+ * A generic <tt>Context</tt> designed to be used by standalone applications without a web-container.
  *
  * @author cvarela
  * @since 0.1
@@ -49,7 +48,8 @@ public class StandaloneContext extends AbstractContext {
     @Override
     public Context doCreateSubcontext(final Name name) throws NamingException {
 
-        LOGGER.log(Level.FINE, "Creating subcontext {0}/{1}", new Object[] { getNameInNamespace(), name.toString() });
+        LOGGER.log(Level.FINE, "Creating subcontext ''{0}/{1}''",
+                new Object[] { getNameInNamespace(), name.toString() });
         final Map<Name, Object> subContexts = getSubContexts();
 
         if (name.size() > 1) {

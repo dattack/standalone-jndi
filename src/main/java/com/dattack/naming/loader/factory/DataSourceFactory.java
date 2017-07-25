@@ -130,7 +130,7 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
                 dataSource = BasicDataSourceFactory.createDataSource(props);
             } catch (final Exception e) { // NOPMD by cvarela on 8/02/16 22:28
                 // we will use a DataSource without a connection pool
-                LOGGER.info(e.getMessage());
+                LOGGER.warning(e.getMessage());
                 final String user = configuration.getString(USERNAME_KEY);
                 dataSource = new SimpleDataSource(driver, url, user, plainPassword);
             }

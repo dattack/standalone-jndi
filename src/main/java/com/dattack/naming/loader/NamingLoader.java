@@ -54,7 +54,7 @@ public final class NamingLoader {
 
         final Object value = factory.getObjectInstance(properties, extraClasspath);
         if (value != null) {
-            LOGGER.log(Level.INFO, "Binding object to '{0}/{1}' (type: '{2}')",
+            LOGGER.log(Level.INFO, "Binding object to ''{0}/{1}'' (type: ''{2}'')",
                     new Object[] { context.getNameInNamespace(), name, type });
             execBind(context, name, value);
         }
@@ -65,24 +65,23 @@ public final class NamingLoader {
         Object obj = context.lookup(key);
 
         if (obj instanceof Context) {
-            LOGGER.log(Level.FINE, "Destroying context with name '{0}'", key);
+            LOGGER.log(Level.FINE, "Destroying context with name ''{0}''", key);
             context.destroySubcontext(key);
             obj = null;
         }
 
         if (obj == null) {
-            LOGGER.log(Level.FINE, "Executing bind method for '{0}'", key);
+            LOGGER.log(Level.FINE, "Executing bind method for ''{0}''", key);
             context.bind(key, value);
         } else {
-            LOGGER.log(Level.FINE, "Executing rebind method for '{0}'", key);
+            LOGGER.log(Level.FINE, "Executing rebind method for ''{0}''", key);
             context.rebind(key, value);
         }
     }
 
     /**
-     * Scans a directory hierarchy looking for <code>*.properties</code> files.
-     * Creates a subcontext for each directory in the hierarchy and binds a new
-     * resource for each <code>*.properties</code> file with a
+     * Scans a directory hierarchy looking for <code>*.properties</code> files. Creates a subcontext for each directory
+     * in the hierarchy and binds a new resource for each <code>*.properties</code> file with a
      * <code>ResourceFactory</code> associated.
      *
      *
