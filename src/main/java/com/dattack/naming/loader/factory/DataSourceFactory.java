@@ -58,7 +58,7 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
     private static final String PASSWORD_KEY = "password";
     public static final String TYPE = "javax.sql.DataSource";
 
-    private static AbstractConfiguration getConfiguration(final Properties properties) {
+    private static CompositeConfiguration getConfiguration(final Properties properties) {
         final CompositeConfiguration configuration = ConfigurationUtil.createEnvSystemConfiguration();
         configuration.addConfiguration(new MapConfiguration(properties));
         return configuration;
@@ -81,7 +81,7 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
 
         if (password != null && password.startsWith(ENCRYPT_PREFIX)) {
             final PrivateKey privateKey = getPrivateKey(configuration);
-            final String encryptedPassword = password.substring(PASSWORD_KEY.length());
+            final String encryptedPassword = password.substring(ENCRYPT_PREFIX.length() + 1);
             return new String(RsaUtils.decryptBase64(encryptedPassword.getBytes(Charset.defaultCharset()), privateKey),
                     Charset.defaultCharset());
         }
@@ -117,7 +117,7 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
             throws NamingException {
 
         try {
-            final AbstractConfiguration configuration = getConfiguration(properties);
+            final CompositeConfiguration configuration = getConfiguration(properties);
 
             final String driver = getMandatoryProperty(configuration, DRIVER_KEY);
             final String url = getMandatoryProperty(configuration, URL_KEY);
@@ -125,7 +125,7 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
 
             DataSource dataSource = null;
             try {
-                configuration.setProperty(PASSWORD_KEY, plainPassword);
+                configuration.getInMemoryConfiguration().setProperty(PASSWORD_KEY, plainPassword);
                 final Properties props = ConfigurationConverter.getProperties(configuration);
                 dataSource = BasicDataSourceFactory.createDataSource(props);
             } catch (final Exception e) { // NOPMD by cvarela on 8/02/16 22:28
