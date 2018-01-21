@@ -117,7 +117,9 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
             throws NamingException {
 
         try {
-            final CompositeConfiguration configuration = getConfiguration(properties);
+            final CompositeConfiguration configuration = ConfigurationUtil.createEnvSystemConfiguration();
+            MapConfiguration mapConfiguration = new MapConfiguration(properties);
+            configuration.addConfiguration(mapConfiguration);
 
             final String driver = getMandatoryProperty(configuration, DRIVER_KEY);
             final String url = getMandatoryProperty(configuration, URL_KEY);
@@ -125,7 +127,7 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
 
             DataSource dataSource = null;
             try {
-                configuration.getInMemoryConfiguration().setProperty(PASSWORD_KEY, plainPassword);
+                mapConfiguration.setProperty(PASSWORD_KEY, plainPassword);
                 final Properties props = ConfigurationConverter.getProperties(configuration);
                 dataSource = BasicDataSourceFactory.createDataSource(props);
             } catch (final Exception e) { // NOPMD by cvarela on 8/02/16 22:28
