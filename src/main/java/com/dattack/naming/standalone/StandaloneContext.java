@@ -28,7 +28,7 @@ import javax.naming.NamingException;
 import com.dattack.naming.AbstractContext;
 
 /**
- * A generic <tt>Context</tt> designed to be used by standalone applications without a web-container.
+ * A generic {@link javax.naming.Context} designed to be used by standalone applications without a web-container.
  *
  * @author cvarela
  * @since 0.1

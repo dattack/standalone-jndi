@@ -58,12 +58,6 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
     private static final String PASSWORD_KEY = "password";
     public static final String TYPE = "javax.sql.DataSource";
 
-    private static CompositeConfiguration getConfiguration(final Properties properties) {
-        final CompositeConfiguration configuration = ConfigurationUtil.createEnvSystemConfiguration();
-        configuration.addConfiguration(new MapConfiguration(properties));
-        return configuration;
-    }
-
     private static String getMandatoryProperty(final AbstractConfiguration configuration, final String propertyName)
             throws ConfigurationException {
 
@@ -86,7 +80,7 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
                     Charset.defaultCharset());
         }
 
-        // not encrypted password
+        // plain password
         return password;
     }
 
@@ -101,12 +95,6 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
 
         if (keyFilename == null) {
             keyFilename = FilesystemUtils.locateFile(DEFAULT_PRIVATE_KEY).getAbsolutePath();
-        }
-
-        // Guard: This should never happen because we have a default private-key
-        // to use
-        if (keyFilename == null) {
-            throw new ConfigurationException("Unable to find the private key. Check your configuration");
         }
 
         return RsaUtils.loadPrivateKey(keyFilename);
@@ -125,7 +113,7 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
             final String url = getMandatoryProperty(configuration, URL_KEY);
             final String plainPassword = getPassword(configuration);
 
-            DataSource dataSource = null;
+            DataSource dataSource;
             try {
                 mapConfiguration.setProperty(PASSWORD_KEY, plainPassword);
                 final Properties props = ConfigurationConverter.getProperties(configuration);

@@ -87,7 +87,7 @@ public final class NamingLoader {
      *
      * @param directory
      *            the directory to scan
-     * @param ctxt
+     * @param context
      *            the Context to populate
      * @param extraClasspath
      *            additional paths to include to the classpath
@@ -96,7 +96,7 @@ public final class NamingLoader {
      * @throws IOException
      *             if an I/O error occurs
      */
-    public void loadDirectory(final File directory, final Context ctxt, final Collection<File> extraClasspath)
+    public void loadDirectory(final File directory, final Context context, final Collection<File> extraClasspath)
             throws NamingException, IOException {
 
         if (!directory.isDirectory()) {
@@ -110,7 +110,7 @@ public final class NamingLoader {
 
         for (final File file : files) {
             if (file.isDirectory()) {
-                final Context subcontext = ctxt.createSubcontext(file.getName());
+                final Context subcontext = context.createSubcontext(file.getName());
                 loadDirectory(file, subcontext, extraClasspath);
             } else {
 
@@ -120,7 +120,7 @@ public final class NamingLoader {
                     try (FileInputStream fin = new FileInputStream(file)) {
                         final Properties properties = new Properties();
                         properties.load(fin);
-                        createAndBind(properties, ctxt, baseName, extraClasspath);
+                        createAndBind(properties, context, baseName, extraClasspath);
                     }
                 }
             }

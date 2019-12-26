@@ -19,20 +19,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 
-import javax.naming.Binding;
-import javax.naming.CannotProceedException;
-import javax.naming.Context;
-import javax.naming.ContextNotEmptyException;
-import javax.naming.InvalidNameException;
-import javax.naming.Name;
-import javax.naming.NameAlreadyBoundException;
-import javax.naming.NameClassPair;
-import javax.naming.NameNotFoundException;
-import javax.naming.NameParser;
-import javax.naming.NamingEnumeration;
-import javax.naming.NamingException;
-import javax.naming.NotContextException;
-import javax.naming.OperationNotSupportedException;
+import javax.naming.*;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -54,10 +41,10 @@ public abstract class AbstractContext implements Cloneable, Context {  // NOPMD 
     private final NameParser nameParser;
 
     // the direct subcontext
-    private Hashtable<Name, Context> subContexts = new Hashtable<Name, Context>();   // NOPMD by cvarela
+    private Hashtable<Name, Context> subContexts = new Hashtable<>();   // NOPMD by cvarela
 
     // the binded table
-    private Map<Name, Object> objectTable = new Hashtable<Name, Object>();
+    private Map<Name, Object> objectTable = new Hashtable<>();
 
     protected AbstractContext(final AbstractContext that) throws NamingException {
         this(that.env);
@@ -65,7 +52,7 @@ public abstract class AbstractContext implements Cloneable, Context {  // NOPMD 
 
     protected AbstractContext(final Map<?, ?> env) throws NamingException {
 
-        this.env = new Hashtable<Object, Object>();
+        this.env = new Hashtable<>();
         if (env != null) {
             this.env.putAll(env);
         }
@@ -75,7 +62,7 @@ public abstract class AbstractContext implements Cloneable, Context {  // NOPMD 
     }
 
     @Override
-    public Object addToEnvironment(final String name, final Object object) throws NamingException {
+    public Object addToEnvironment(final String name, final Object object) {
         return this.env.put(name, object);
     }
 
@@ -96,6 +83,10 @@ public abstract class AbstractContext implements Cloneable, Context {  // NOPMD 
         if (subContexts.containsKey(prefix)) {
             subContexts.get(prefix).bind(name.getSuffix(1), object);
             return;
+        }
+
+        if (name.size() > 1) {
+            throw new NameNotFoundException(String.format("Missing context '%s'", prefix.toString()));
         }
 
         if (objectTable.containsKey(name) || subContexts.containsKey(name) || env.containsKey(name.toString())) {
@@ -147,8 +138,9 @@ public abstract class AbstractContext implements Cloneable, Context {  // NOPMD 
                     String.format("Unable to compose name with null values (prefix: %s, name: %s)", prefix, name));
         }
 
-        final Name composeName = (Name) prefix.clone();
-        composeName.addAll(name);
+        //CompoundName compoundName = new CompoundName();
+        final Name composeName = (CompoundName) prefix.clone();
+        composeName.add(name.toString());
         return composeName;
     }
 
@@ -227,7 +219,7 @@ public abstract class AbstractContext implements Cloneable, Context {  // NOPMD 
     }
 
     @Override
-    public Hashtable<?, ?> getEnvironment() throws NamingException {
+    public Hashtable<?, ?> getEnvironment() {
         if (this.env == null) {
             return new Hashtable<String, Object>();
         }
@@ -236,7 +228,7 @@ public abstract class AbstractContext implements Cloneable, Context {  // NOPMD 
     }
 
     @Override
-    public String getNameInNamespace() throws NamingException {
+    public String getNameInNamespace() {
         return nameInNamespace.toString();
     }
 
@@ -287,7 +279,7 @@ public abstract class AbstractContext implements Cloneable, Context {  // NOPMD 
 
         if (name == null || name.isEmpty()) {
             // list all elements
-            final Map<Name, Object> enumStore = new HashMap<Name, Object>();
+            final Map<Name, Object> enumStore = new HashMap<>();
             enumStore.putAll(objectTable);
             enumStore.putAll(subContexts);
             return new NameClassPairNamingEnumeration(enumStore);
@@ -316,7 +308,7 @@ public abstract class AbstractContext implements Cloneable, Context {  // NOPMD 
         ensureContextNotClosed();
 
         if (name == null || name.isEmpty()) {
-            final Map<Name, Object> enumStore = new HashMap<Name, Object>();
+            final Map<Name, Object> enumStore = new HashMap<>();
             enumStore.putAll(objectTable);
             enumStore.putAll(subContexts);
             return new BindingNamingEnumeration(enumStore);
@@ -406,11 +398,6 @@ public abstract class AbstractContext implements Cloneable, Context {  // NOPMD 
 
         // the parent context must exists
         getParentContext(name);
-        // final Object targetContext = lookup(name.getPrefix(name.size() - 1));
-        // if (targetContext == null || !(targetContext instanceof Context)) {
-        // throw new NamingException(
-        // String.format("Cannot bind object due context does not exist (%s)", name.toString()));
-        // }
         unbind(name);
         bind(name, object);
     }
@@ -421,7 +408,7 @@ public abstract class AbstractContext implements Cloneable, Context {  // NOPMD 
     }
 
     @Override
-    public Object removeFromEnvironment(final String name) throws NamingException {
+    public Object removeFromEnvironment(final String name) {
         if (this.env == null) {
             return null;
         }
@@ -482,9 +469,7 @@ public abstract class AbstractContext implements Cloneable, Context {  // NOPMD 
         }
 
         if (name.size() == 1) {
-            if (objectTable.containsKey(name)) {
-                objectTable.remove(name);
-            }
+            objectTable.remove(name);
             return;
         }
 

@@ -36,14 +36,13 @@ class DefaultNameParser implements NameParser {
 
     private final Properties properties;
 
-    public DefaultNameParser(final Context parent) throws NamingException {
+    DefaultNameParser(final Context parent) throws NamingException {
         this.properties = new Properties();
         properties.putAll(parent.getEnvironment());
     }
 
     @Override
-    public Name parse(final String name) throws InvalidNameException, NamingException {
-
+    public Name parse(final String name) throws NamingException {
         return new CompoundName(StringUtils.trimToEmpty(name), properties);
     }
 }

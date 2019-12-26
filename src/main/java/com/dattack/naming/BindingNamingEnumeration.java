@@ -27,7 +27,7 @@ import javax.naming.Binding;
  */
 public class BindingNamingEnumeration extends AbstractNamingEnumeration<Binding> {
 
-    public BindingNamingEnumeration(final Map<?, ?> table) {
+    BindingNamingEnumeration(final Map<?, ?> table) {
         super(table);
     }
 
