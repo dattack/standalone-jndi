@@ -15,29 +15,29 @@
  */
 package com.dattack.naming.loader.factory;
 
-import java.io.File;
-import java.nio.charset.Charset;
-import java.security.PrivateKey;
-import java.util.Collection;
-import java.util.Properties;
-import java.util.logging.Logger;
-
-import javax.naming.ConfigurationException;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
-
-import org.apache.commons.configuration.AbstractConfiguration;
-import org.apache.commons.configuration.CompositeConfiguration;
-import org.apache.commons.configuration.ConfigurationConverter;
-import org.apache.commons.configuration.MapConfiguration;
-import org.apache.commons.dbcp.BasicDataSourceFactory;
-
 import com.dattack.jtoolbox.commons.configuration.ConfigurationUtil;
 import com.dattack.jtoolbox.io.FilesystemUtils;
 import com.dattack.jtoolbox.jdbc.DataSourceClasspathDecorator;
 import com.dattack.jtoolbox.jdbc.SimpleDataSource;
 import com.dattack.jtoolbox.security.DattackSecurityException;
 import com.dattack.jtoolbox.security.RsaUtils;
+import com.dattack.jtoolbox.util.PropertiesUtils;
+import org.apache.commons.configuration.AbstractConfiguration;
+import org.apache.commons.configuration.CompositeConfiguration;
+import org.apache.commons.configuration.ConfigurationConverter;
+import org.apache.commons.configuration.MapConfiguration;
+import org.apache.commons.dbcp.BasicDataSourceFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.naming.ConfigurationException;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+import java.io.File;
+import java.nio.charset.Charset;
+import java.security.PrivateKey;
+import java.util.Collection;
+import java.util.Properties;
 
 /**
  * @author cvarela
@@ -45,7 +45,7 @@ import com.dattack.jtoolbox.security.RsaUtils;
  */
 public class DataSourceFactory implements ResourceFactory<DataSource> {
 
-    private static final Logger LOGGER = Logger.getLogger(DataSourceFactory.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceFactory.class);
 
     private static final String ENCRYPT_PREFIX = "encrypt";
     private static final String PRIVATE_KEY_FILENAME = "privateKey";
@@ -69,7 +69,7 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
     }
 
     private static String getPassword(final AbstractConfiguration configuration)
-            throws ConfigurationException, DattackSecurityException {
+            throws DattackSecurityException {
 
         final String password = configuration.getString(PASSWORD_KEY);
 
@@ -85,18 +85,22 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
     }
 
     private static PrivateKey getPrivateKey(final AbstractConfiguration configuration)
-            throws DattackSecurityException, ConfigurationException {
+            throws DattackSecurityException {
 
         String keyFilename = configuration.getString(PRIVATE_KEY_FILENAME);
+        LOGGER.debug("Trying to locate private key ({} = {})", PRIVATE_KEY_FILENAME, keyFilename);
 
         if (keyFilename == null) {
             keyFilename = configuration.getString(GLOBAL_PRIVATE_KEY_FILENAME);
+            LOGGER.debug("Trying to locate private key ({} = {})", GLOBAL_PRIVATE_KEY_FILENAME, keyFilename);
         }
 
         if (keyFilename == null) {
             keyFilename = FilesystemUtils.locateFile(DEFAULT_PRIVATE_KEY).getAbsolutePath();
+            LOGGER.debug("Trying to locate private key (default = {})", keyFilename);
         }
 
+        LOGGER.debug("Loading private key '{}'", keyFilename);
         return RsaUtils.loadPrivateKey(keyFilename);
     }
 
@@ -106,7 +110,8 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
 
         try {
             final CompositeConfiguration configuration = ConfigurationUtil.createEnvSystemConfiguration();
-            MapConfiguration mapConfiguration = new MapConfiguration(properties);
+
+            MapConfiguration mapConfiguration = new MapConfiguration(PropertiesUtils.toMap(properties));
             configuration.addConfiguration(mapConfiguration);
 
             final String driver = getMandatoryProperty(configuration, DRIVER_KEY);
@@ -120,7 +125,8 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
                 dataSource = BasicDataSourceFactory.createDataSource(props);
             } catch (final Exception e) { // NOPMD by cvarela on 8/02/16 22:28
                 // we will use a DataSource without a connection pool
-                LOGGER.warning(e.getMessage());
+                LOGGER.info("Unable to instantiate a BasicDataSource object; trying SimpleDataSource: {}",
+                        e.getMessage(), e);
                 final String user = configuration.getString(USERNAME_KEY);
                 dataSource = new SimpleDataSource(driver, url, user, plainPassword);
             }

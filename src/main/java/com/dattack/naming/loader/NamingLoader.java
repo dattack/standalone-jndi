@@ -15,21 +15,19 @@
  */
 package com.dattack.naming.loader;
 
+import com.dattack.naming.loader.factory.ResourceFactory;
+import com.dattack.naming.loader.factory.ResourceFactoryRegistry;
+import org.apache.commons.io.FilenameUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.naming.Context;
+import javax.naming.NamingException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.naming.Context;
-import javax.naming.NamingException;
-
-import org.apache.commons.io.FilenameUtils;
-
-import com.dattack.naming.loader.factory.ResourceFactory;
-import com.dattack.naming.loader.factory.ResourceFactoryRegistry;
 
 /**
  * @author cvarela
@@ -37,7 +35,7 @@ import com.dattack.naming.loader.factory.ResourceFactoryRegistry;
  */
 public final class NamingLoader {
 
-    private static final Logger LOGGER = Logger.getLogger(NamingLoader.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(NamingLoader.class);
 
     private static final String TYPE_KEY = "type";
     private static final String[] EXTENSIONS = new String[] { "properties" };
@@ -48,14 +46,13 @@ public final class NamingLoader {
         final String type = properties.getProperty(TYPE_KEY);
         final ResourceFactory<?> factory = ResourceFactoryRegistry.getFactory(type);
         if (factory == null) {
-            LOGGER.log(Level.WARNING, "Unable to get a factory for type ''{0}''", type);
+            LOGGER.warn("Unable to get a factory for type '{}'", type);
             return;
         }
 
         final Object value = factory.getObjectInstance(properties, extraClasspath);
         if (value != null) {
-            LOGGER.log(Level.INFO, "Binding object to ''{0}/{1}'' (type: ''{2}'')",
-                    new Object[] { context.getNameInNamespace(), name, type });
+            LOGGER.info("Binding object to '{}/{}' (type: '{}')", context.getNameInNamespace(), name, type);
             execBind(context, name, value);
         }
     }
@@ -65,16 +62,13 @@ public final class NamingLoader {
         Object obj = context.lookup(key);
 
         if (obj instanceof Context) {
-            LOGGER.log(Level.FINE, "Destroying context with name ''{0}''", key);
             context.destroySubcontext(key);
             obj = null;
         }
 
         if (obj == null) {
-            LOGGER.log(Level.FINE, "Executing bind method for ''{0}''", key);
             context.bind(key, value);
         } else {
-            LOGGER.log(Level.FINE, "Executing rebind method for ''{0}''", key);
             context.rebind(key, value);
         }
     }

@@ -15,17 +15,12 @@
  */
 package com.dattack.naming.standalone;
 
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.naming.Context;
-import javax.naming.Name;
-import javax.naming.NameAlreadyBoundException;
-import javax.naming.NameNotFoundException;
-import javax.naming.NamingException;
-
 import com.dattack.naming.AbstractContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.naming.*;
+import java.util.Map;
 
 /**
  * A generic {@link javax.naming.Context} designed to be used by standalone applications without a web-container.
@@ -35,7 +30,7 @@ import com.dattack.naming.AbstractContext;
  */
 public class StandaloneContext extends AbstractContext {
 
-    private static final Logger LOGGER = Logger.getLogger(StandaloneContext.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(StandaloneContext.class);
 
     private StandaloneContext(final AbstractContext that) throws NamingException {
         super(that);
@@ -48,8 +43,7 @@ public class StandaloneContext extends AbstractContext {
     @Override
     public Context doCreateSubcontext(final Name name) throws NamingException {
 
-        LOGGER.log(Level.FINE, "Creating subcontext ''{0}/{1}''",
-                new Object[] { getNameInNamespace(), name.toString() });
+        LOGGER.debug("Creating subcontext '{}/{}'", getNameInNamespace(), name.toString());
         final Map<Name, Object> subContexts = getSubContexts();
 
         if (name.size() > 1) {

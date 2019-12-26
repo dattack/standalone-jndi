@@ -63,6 +63,7 @@
         <junit.version>4.12</junit.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <sqlite.version>3.8.11.2</sqlite.version>
+        <slf4j.version>1.7.30</slf4j.version>
     </properties>
     <dependencies>
         <dependency>
@@ -74,6 +75,21 @@
             <groupId>com.dattack</groupId>
             <artifactId>jtoolbox-core</artifactId>
             <version>${jtoolbox.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jul-to-slf4j</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4j.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-dbcp</groupId>

@@ -12,28 +12,26 @@
  */
 package com.dattack.naming.standalone;
 
+import com.dattack.jtoolbox.commons.configuration.ConfigurationUtil;
+import com.dattack.jtoolbox.io.FilesystemUtils;
+import com.dattack.naming.loader.NamingLoader;
+import org.apache.commons.configuration.BaseConfiguration;
+import org.apache.commons.configuration.CompositeConfiguration;
+import org.apache.commons.configuration.PropertyConverter;
+import org.apache.commons.lang.ObjectUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.naming.ConfigurationException;
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.naming.spi.InitialContextFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.naming.ConfigurationException;
-import javax.naming.Context;
-import javax.naming.NamingException;
-import javax.naming.spi.InitialContextFactory;
-
-import org.apache.commons.configuration.BaseConfiguration;
-import org.apache.commons.configuration.CompositeConfiguration;
-import org.apache.commons.configuration.PropertyConverter;
-import org.apache.commons.lang.ObjectUtils;
-
-import com.dattack.jtoolbox.commons.configuration.ConfigurationUtil;
-import com.dattack.jtoolbox.io.FilesystemUtils;
-import com.dattack.naming.loader.NamingLoader;
 
 /**
  * Initial Context Factory for {@link StandaloneContext}.
@@ -43,7 +41,7 @@ import com.dattack.naming.loader.NamingLoader;
  */
 public final class StandaloneContextFactory implements InitialContextFactory {
 
-    private static final Logger LOGGER = Logger.getLogger(StandaloneContextFactory.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(StandaloneContextFactory.class);
 
     private static final String CLASSPATH_DIRECTORY_PROPERTY = StandaloneContextFactory.class.getName()
             + ".classpath.directory";
@@ -56,7 +54,7 @@ public final class StandaloneContextFactory implements InitialContextFactory {
     private static Context createInitialContext(final File dir, final Map<?, ?> environment,
             final CompositeConfiguration configuration) throws NamingException {
 
-        LOGGER.log(Level.FINEST, "Scanning directory ''{0}'' for JNDI resources.", dir);
+        LOGGER.debug("Scanning directory '{}' for JNDI resources.", dir);
         try {
             final StandaloneContext ctx = new StandaloneContext(environment);
             final NamingLoader loader = new NamingLoader();
@@ -64,7 +62,7 @@ public final class StandaloneContextFactory implements InitialContextFactory {
                     .locateFiles(configuration.getList(CLASSPATH_DIRECTORY_PROPERTY));
             loader.loadDirectory(dir, ctx, extraClasspath);
 
-            LOGGER.log(Level.FINEST, "JNDI context is ready");
+            LOGGER.debug("JNDI context is ready");
 
             return ctx;
         } catch (final IOException e) {
@@ -101,7 +99,7 @@ public final class StandaloneContextFactory implements InitialContextFactory {
     private static Context loadInitialContext(final Hashtable<?, ?> environment) // NOPMD by cvarela
             throws NamingException {
 
-        LOGGER.log(Level.FINEST, "loadInitialContext: ''{0}''", environment);
+        LOGGER.debug("loadInitialContext: '{}'", environment);
         final CompositeConfiguration configuration = getConfiguration(environment);
 
         final Object configDir = getResourcesDirectory(configuration);
