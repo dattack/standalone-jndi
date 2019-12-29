@@ -120,10 +120,25 @@ public final class StandaloneContextFactory implements InitialContextFactory {
         if (context == null) {
             synchronized (StandaloneContextFactory.class) {
                 if (context == null) {
-                    context = loadInitialContext(environment);
+                    context = loadInitialContext(setDefaultProperties(environment));
                 }
             }
         }
         return context;
+    }
+
+    private Hashtable<?, ?> setDefaultProperties(final Hashtable<?, ?> environment) {
+
+        Hashtable<String, String> table = new Hashtable(environment);
+        setDefaultValue(table, "jndi.syntax.direction", "left_to_right");
+        setDefaultValue(table, "jndi.syntax.separator", "/");
+        setDefaultValue(table, "jndi.syntax.ignorecase", "true");
+        return table;
+    }
+
+    private void setDefaultValue(final Hashtable<String, String> environment, String key, String value) {
+        if (!environment.containsKey(key)) {
+            environment.put(key, value);
+        }
     }
 }
