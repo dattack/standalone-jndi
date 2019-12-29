@@ -1,7 +1,16 @@
 language: java
 jdk:
-- oraclejdk8
+- openjdk8
 sudo: false
+dist: xenial
+
+# safelist
+branches:
+  only:
+  - master
+  - develop
+  - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
+
 notifications:
   email:
     recipients:
@@ -14,7 +23,6 @@ env:
   - secure: WeILAheeZZ+NhjfuOeCJvfzegXF/32rLCQkcD83p/hfnUY2aBc6s/plR5D3c7Mwzi3Xt/ZQDBl6b3La3+PYr3/qvVWVjZQgTIjh0BZcH8mJ43NQy+FXtbauO6Jwe3XOKasgNYjjwhacmg7c09oM2UZlo2fyv+ilvpiaA1iaSDrbQwjrzxxs2p3obd8QyuvF8v24qnFdMJHSyX12nP5o0wv6Gooi9VNI+39pGkZL0oAGqdcwinHh0mfC3nhDIp6+nb/bOscVCmH5MlbUS1wvOquLjyMSJhafbmKwhKJgCBYOn/CJchjQerp0btU7myV/sDr7mWImrwZxGsMFOQu4r2cOR6PfAFiL9lAprXAJOj0oB0NYgJxMNIzTGzdRq9NmIV/VWsEKGmQFEh4RtlwUjwAdksOdd/G4xXl8EDt5vAcG70Psgy1SBkO4raF41Vco1jrg1rXecJJsjj7C1zKa7CV6TPLyayMMgJF3OLMTz5Lvetvorhl9YuxbBTd1P1ID97xP4MaCBO3S3TpPQ19kP6/ErED45q9mpGhRMKoY6O24RTvDT+PWvl3bKkswFSw8Rtx+xmKyIiIoCW+Ynlt793GdDv6kaZFKOpXYylcYbCp5/+BmfRMWGVU32I6JLvkzYKeDjaiJgQjZYh3BxNsUqjI0sU93ErA9nc0T7j+lhMHE=
   - secure: MlswJ8rQG/pUcRmi01JPdFb59T0p/3oB7d/Lw0P7JW3quqSnJUcTCBBh60NzdGBFZY//Kwau5HbM5Gk9F++yj1KmeMVkP5P2ru9fbHuW0/Wh7MYBg+N8zg4IEKI1PjBNSISmqpGaLi1O5LM1e+arSNW8Awt82NqZ3NsXOK6c7TYL3HunPPIPcujtBl7mrwQpilLQ92zb3oFMHkJiCPy8/C8GaYGUTs6Xn0zR3VvqCAtQ9JZ+cIftJ65b5E6K6nBeV0XhEmvKYM21Zu7XXxp/5T9U1b4Fm2o4jRpOEmk5l5GgT61IqBSFxtgjgBboJM0aVauDDk8B0OqotDV8tVRWGC0uKsgFXK+CLlVKQjIF/YyvxUgLpU4qdYWPadQOOCf79DMAjKxuUPyhy+cFsx2JK/xJ4UdRErCCqwCcW4uVRbsidjSB57q9HrAKt9Eue4g852scxpeHR0QS6N1eT3ffSfS+TrEmwI8LScdIBrdWAJCfh0PE8fjVIuQ9wJ7hPd3g/B6gp7YeHQ5X5LTSZa7cetSqdCs92pIZvogv/UqLqmKVAFKNjq6Gi31M6bbsWgRmnWyjRyNbbVoBD9TuQrhgZ8W2tRvtGDkZvpUmfCed7KH4dQzhOt+TocfryYTekihE7l1uhAHxVbHrhze93Mr1aKBDJ0WLM6kpP8UWbC4mWvY=
   - secure: qpYLSLd6SyA/D2qkB0ofC5j+w5sek9r/rDOLZ+/dnf61PcK0+HzeN3YL7Fo3lPBp0M+gkLud1tZKzItVA+PsBCozRkraOQ5yvmM4KF3HV/eqxx6QOuR5YWpT37j7DakIFB3RmW+DDATueojEHFuOSzGWaXs/uBlGvTrHTPiTgUOqjJYWlCZTQRwlersLKOc1HdYb0MepNB3xttjofQAhnabWdz1zmtswT/qw71sjRMSnzdy9WioBuktvsenmkSxKrYI56MmzREQV/tG1i2QpR/NHDP3C4SkhK3XSwp9EYQxlgAMz/l/eGBLavnsLKFs5AgZxVmql9w21DCFc0p2xhhusJCLeLEgtCtGxzU6sGAujKi1wAc84II2hmxdD7/CA7IcqjLfYP5GnHHG7ppEyiOPFMTCOFNA20Gtupux46JD20ahIVeowlk58oftMod1LC4FPWJeuv4eI2T+Q5vY3EjcqkT2xZxIoB5bBB4vvKiIzUeX8ML10TLDdxOhqtMWNc+EpQRqrRNx6TkuGi3rOSfED0WACeVDjsoluAacfHOHbwFEIr9cVB+JIUMnOi38NKKkzLd7Pjk3IqEluquxhbndoFP6no/lpHWQA+wEyli+YPi7pti3gutcdZupBS3CIyAKhgqckPHXpouh2LkglQ+pqvJRwKiO+bbVQJMuR12M=
-
 
 install: mvn install -P !build-extras -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 
