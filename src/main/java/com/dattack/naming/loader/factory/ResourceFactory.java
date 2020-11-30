@@ -22,6 +22,9 @@ import java.util.Properties;
 import javax.naming.NamingException;
 
 /**
+ * Interface that must be implemented by all the factories in charge of instantiating objects that can be accessed by
+ * JNDI.
+ *
  * @author cvarela
  * @since 0.1
  * @param <T>

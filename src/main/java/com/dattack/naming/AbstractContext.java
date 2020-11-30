@@ -15,13 +15,25 @@
  */
 package com.dattack.naming;  // NOPMD by cvarela
 
+import org.apache.commons.lang.StringUtils;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
-
-import javax.naming.*;
-
-import org.apache.commons.lang.StringUtils;
+import javax.naming.Binding;
+import javax.naming.CannotProceedException;
+import javax.naming.CompoundName;
+import javax.naming.Context;
+import javax.naming.ContextNotEmptyException;
+import javax.naming.InvalidNameException;
+import javax.naming.Name;
+import javax.naming.NameAlreadyBoundException;
+import javax.naming.NameClassPair;
+import javax.naming.NameNotFoundException;
+import javax.naming.NameParser;
+import javax.naming.NamingEnumeration;
+import javax.naming.NamingException;
+import javax.naming.NotContextException;
+import javax.naming.OperationNotSupportedException;
 
 /**
  * Provides the base implementation of naming context.

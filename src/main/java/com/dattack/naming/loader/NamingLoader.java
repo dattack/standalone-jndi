@@ -30,6 +30,11 @@ import java.util.Collection;
 import java.util.Properties;
 
 /**
+ * This class is responsible for instantiating and registering the configured JNDI resources. To do this, it scans the
+ * configuration directory and creates the necessary sub-contexts associated with the different subdirectories.  For
+ * each one of them, it processes the .properties files that it finds and instance, using the factory corresponding to
+ * the type of resource indicated in the configuration file, the object that later will bind into the JNDI register.
+ *
  * @author cvarela
  * @since 0.1
  */

@@ -18,9 +18,12 @@ package com.dattack.naming.standalone;
 import com.dattack.naming.AbstractContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.naming.*;
 import java.util.Map;
+import javax.naming.Context;
+import javax.naming.Name;
+import javax.naming.NameAlreadyBoundException;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingException;
 
 /**
  * A generic {@link javax.naming.Context} designed to be used by standalone applications without a web-container.
