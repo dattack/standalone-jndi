@@ -43,7 +43,7 @@
         <url>http://github.com/dattack/standalone-jndi</url>
     </scm>
     <issueManagement>
-        <system>GitHub Issue Management</system>
+        <system>GitHub</system>
         <url>https://github.com/dattack/standalone-jndi/issues</url>
     </issueManagement>
     <ciManagement>
