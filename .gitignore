@@ -56,3 +56,7 @@ target
 *.iml
 
 .idea/
+
+*.ipr
+
+*.iws
