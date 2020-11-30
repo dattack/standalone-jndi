@@ -18,6 +18,8 @@ package com.dattack.naming.loader.factory;
 import javax.naming.ConfigurationException;
 
 /**
+ * This exception is triggered when there is a security problem in decrypting an encrypted password.
+ *
  * @author cvarela
  * @since 0.2
  */

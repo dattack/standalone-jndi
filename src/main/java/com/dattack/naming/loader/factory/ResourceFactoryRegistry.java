@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * The registry containing the mapping of resource types and factories.
+ *
  * @author cvarela
  * @since 0.1
  */

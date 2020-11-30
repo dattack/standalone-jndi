@@ -29,17 +29,36 @@ import org.apache.commons.configuration.MapConfiguration;
 import org.apache.commons.dbcp.BasicDataSourceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.naming.ConfigurationException;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.security.PrivateKey;
 import java.util.Collection;
 import java.util.Properties;
+import javax.naming.ConfigurationException;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
 
 /**
+ * A factory that allows the instantiation of DataSource objects from the configuration provided. The minimum set of
+ * properties required is as follows:
+ * <ul>
+ * <li>driverClassName: the JDBC Driver object</li>
+ * <li>url: the JDBC URL to use for accessing the DriverManager</li>
+ * </ul>
+ * <p>
+ *  The <i>username</i> and <i>password</i> are optional. The password, if encrypted, must be configured by prefixing
+ *  as <strong>encrypt:</strong><i>encrypted_password</i>, where <i>encrypted_password</i> is the value returned by
+ *  {@link com.dattack.jtoolbox.security.tool.SecurityTool}. The private key used to decrypt the password will be one
+ *  of the following, in order:
+ *  </p>
+ *  <ol>
+ *      <li>the path to the file indicated in the <i>'privateKey'</i> property.</li>
+ *      <li>the path to the file indicated in the <i>'globalPrivateKey'</i> property.</li>
+ *      <li>the content of the <i>id_rsa</i> file</li>
+ *  </ol>
+ * Additional properties can be specified to configure a connection pool. See
+ * {@link org.apache.commons.dbcp.BasicDataSourceFactory} for more information.
+ *
  * @author cvarela
  * @since 0.1
  */
