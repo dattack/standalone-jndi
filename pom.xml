@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.dattack</groupId>
         <artifactId>parent</artifactId>
-        <version>3-SNAPSHOT</version>
+        <version>3</version>
     </parent>
     <artifactId>standalone-jndi</artifactId>
     <version>0.2.1-SNAPSHOT</version>
@@ -38,7 +38,7 @@
     </developers>
     <scm>
         <connection>scm:git:https://github.com/dattack/standalone-jndi.git</connection>
-        <developerConnection>scm:git:git+ssh://git@github.com/dattack/standalone-jndi.git</developerConnection>
+        <developerConnection>scm:git:https://github.com/dattack/standalone-jndi.git</developerConnection>
         <tag>HEAD</tag>
         <url>http://github.com/dattack/standalone-jndi</url>
     </scm>
@@ -58,12 +58,12 @@
     </distributionManagement>
     <properties>
         <commons-dbcp.version>1.4</commons-dbcp.version>
-        <commons-io.version>2.4</commons-io.version>
-        <jtoolbox.version>0.2.2-SNAPSHOT</jtoolbox.version>
-        <junit.version>4.12</junit.version>
+        <commons-io.version>2.8.0</commons-io.version>
+        <jtoolbox.version>0.3</jtoolbox.version>
+        <junit.version>4.13.1</junit.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <slf4j.version>1.7.30</slf4j.version>
-        <sqlite.version>3.8.11.2</sqlite.version>
+        <slf4j.version>1.8.0-beta4</slf4j.version>
+        <sqlite.version>3.32.3.2</sqlite.version>
     </properties>
     <dependencies>
         <dependency>
