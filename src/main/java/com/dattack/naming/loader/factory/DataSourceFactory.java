@@ -18,6 +18,7 @@ package com.dattack.naming.loader.factory;
 import com.dattack.jtoolbox.commons.configuration.ConfigurationUtil;
 import com.dattack.jtoolbox.io.FilesystemUtils;
 import com.dattack.jtoolbox.jdbc.DataSourceClasspathDecorator;
+import com.dattack.jtoolbox.jdbc.InitializableDataSource;
 import com.dattack.jtoolbox.jdbc.SimpleDataSource;
 import com.dattack.jtoolbox.security.DattackSecurityException;
 import com.dattack.jtoolbox.security.RsaUtils;
@@ -27,12 +28,15 @@ import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.configuration.ConfigurationConverter;
 import org.apache.commons.configuration.MapConfiguration;
 import org.apache.commons.dbcp.BasicDataSourceFactory;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.security.PrivateKey;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 import javax.naming.ConfigurationException;
 import javax.naming.NamingException;
@@ -75,6 +79,8 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
     private static final String URL_KEY = "url";
     private static final String USERNAME_KEY = "username";
     private static final String PASSWORD_KEY = "password";
+    private static final String ON_CONNECT_SCRIPT_KEY = "onConnectScript";
+    private static final String DISABLE_POOL_KEY = "disablePool";
     public static final String TYPE = "javax.sql.DataSource";
 
     private static String getMandatoryProperty(final AbstractConfiguration configuration, final String propertyName)
@@ -137,22 +143,41 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
             final String url = getMandatoryProperty(configuration, URL_KEY);
             final String plainPassword = getPassword(configuration);
 
-            DataSource dataSource;
-            try {
-                mapConfiguration.setProperty(PASSWORD_KEY, plainPassword);
-                final Properties props = ConfigurationConverter.getProperties(configuration);
-                dataSource = BasicDataSourceFactory.createDataSource(props);
-            } catch (final Exception e) { // NOPMD by cvarela on 8/02/16 22:28
-                // we will use a DataSource without a connection pool
-                LOGGER.info("Unable to instantiate a BasicDataSource object; trying SimpleDataSource: {}",
-                        e.getMessage(), e);
+            DataSource dataSource = null;
+
+            if (!configuration.getBoolean(DISABLE_POOL_KEY, false)) {
+                try {
+                    mapConfiguration.setProperty(PASSWORD_KEY, plainPassword);
+                    final Properties props = ConfigurationConverter.getProperties(configuration);
+                    dataSource = BasicDataSourceFactory.createDataSource(props);
+                } catch (final Exception e) { // NOPMD by cvarela on 8/02/16 22:28
+                    // we will use a DataSource without a connection pool
+                    LOGGER.info("Unable to instantiate a BasicDataSource object; trying SimpleDataSource: {}",
+                            e.getMessage(), e);
+                }
+            }
+
+            if (dataSource == null) {
                 final String user = configuration.getString(USERNAME_KEY);
                 dataSource = new SimpleDataSource(driver, url, user, plainPassword);
             }
+
+            // include on-connect script, if one exists
+            dataSource = decorateWithOnConnectScript(configuration.getString(ON_CONNECT_SCRIPT_KEY), dataSource);
 
             return new DataSourceClasspathDecorator(dataSource, extraClasspath);
         } catch (final DattackSecurityException e) {
             throw new SecurityConfigurationException(e);
         }
+    }
+
+    private DataSource decorateWithOnConnectScript(String script, DataSource dataSource) {
+
+        DataSource result = dataSource;
+        if (StringUtils.isNotBlank(script)) {
+            List<String> sqlStatements = Arrays.asList(script.split(";"));
+            result = new InitializableDataSource(result, sqlStatements);
+        }
+        return result;
     }
 }

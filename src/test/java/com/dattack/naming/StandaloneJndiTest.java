@@ -15,21 +15,16 @@
  */
 package com.dattack.naming;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
-
 import org.apache.commons.lang.ObjectUtils;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+import static org.junit.Assert.*;
 
 /**
  * @author cvarela
@@ -45,21 +40,21 @@ public final class StandaloneJndiTest {
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    private static String getCompositeName(final String context, final String objectName) {
-        return String.format("%s/%s", context, objectName);
-    }
-
     @Test
     public void testBind() {
         try {
             final InitialContext context = new InitialContext();
             final String name = getCompositeName("jdbc", "testBind");
-            final Object obj = new Integer(10);
+            final Object obj = 10;
             context.bind(name, obj);
             assertEquals(obj, context.lookup(name));
         } catch (final NamingException e) {
             fail(e.getMessage());
         }
+    }
+
+    private static String getCompositeName(final String context, final String objectName) {
+        return String.format("%s/%s", context, objectName);
     }
 
     @Ignore("Validate the response against the JNDI specification")
@@ -68,7 +63,7 @@ public final class StandaloneJndiTest {
         exception.expect(NamingException.class);
         final InitialContext context = new InitialContext();
         final String name = getCompositeName(INVALID_CONTEXT, "testBind");
-        final Object obj = new Integer(10);
+        final Object obj = 10;
         context.bind(name, obj);
         fail(String.format("This test must fail because the name '%s' not exists (object: %s)", INVALID_CONTEXT,
                 ObjectUtils.toString(obj)));
