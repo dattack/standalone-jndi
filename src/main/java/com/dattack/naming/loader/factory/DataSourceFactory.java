@@ -137,6 +137,7 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
             final CompositeConfiguration configuration = ConfigurationUtil.createEnvSystemConfiguration();
 
             MapConfiguration mapConfiguration = new MapConfiguration(PropertiesUtils.toMap(properties));
+            mapConfiguration.setDelimiterParsingDisabled(true);
             configuration.addConfiguration(mapConfiguration);
 
             final String driver = getMandatoryProperty(configuration, DRIVER_KEY);
@@ -176,6 +177,7 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
         DataSource result = dataSource;
         if (StringUtils.isNotBlank(script)) {
             List<String> sqlStatements = Arrays.asList(script.split(";"));
+            LOGGER.debug("Commands to execute on connect: {}", sqlStatements);
             result = new InitializableDataSource(result, sqlStatements);
         }
         return result;
