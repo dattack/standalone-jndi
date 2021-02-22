@@ -57,6 +57,7 @@
         </site>
     </distributionManagement>
     <properties>
+        <atomikos.version>5.0.8</atomikos.version>
         <commons-dbcp.version>1.4</commons-dbcp.version>
         <commons-io.version>2.8.0</commons-io.version>
         <jtoolbox.version>0.4-SNAPSHOT</jtoolbox.version>
@@ -77,11 +78,6 @@
             <version>${jtoolbox.version}</version>
         </dependency>
         <dependency>
-            <groupId>commons-dbcp</groupId>
-            <artifactId>commons-dbcp</artifactId>
-            <version>${commons-dbcp.version}</version>
-        </dependency>
-        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>${commons-io.version}</version>
@@ -100,6 +96,24 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
             <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.atomikos</groupId>
+            <artifactId>transactions-jdbc</artifactId>
+            <version>${atomikos.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atomikos</groupId>
+            <artifactId>transactions-jta</artifactId>
+            <version>${atomikos.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-dbcp</groupId>
+            <artifactId>commons-dbcp</artifactId>
+            <version>${commons-dbcp.version}</version>
+            <scope>runtime</scope>
         </dependency>
         <!-- For test only -->
         <dependency>
