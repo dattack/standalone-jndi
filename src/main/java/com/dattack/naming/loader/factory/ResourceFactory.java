@@ -15,10 +15,7 @@
  */
 package com.dattack.naming.loader.factory;
 
-import java.io.File;
-import java.util.Collection;
 import java.util.Properties;
-
 import javax.naming.NamingException;
 
 /**
@@ -35,13 +32,12 @@ public interface ResourceFactory<T> {
     /**
      * Creates a new instance using the specified properties.
      *
+     * @param jndiName name of the JNDI resource
      * @param properties
      *            a Properties data structure
-     * @param extraClasspath
-     *            additional paths to explore
      * @return an instance of T
      * @throws NamingException
      *             when a configuration error occurs
      */
-    T getObjectInstance(Properties properties, final Collection<File> extraClasspath) throws NamingException;
+    T getObjectInstance(String jndiName, Properties properties) throws NamingException;
 }

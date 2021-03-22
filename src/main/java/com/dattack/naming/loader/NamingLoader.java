@@ -20,14 +20,12 @@ import com.dattack.naming.loader.factory.ResourceFactoryRegistry;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.naming.Context;
-import javax.naming.NamingException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Properties;
+import javax.naming.Context;
+import javax.naming.NamingException;
 
 /**
  * This class is responsible for instantiating and registering the configured JNDI resources. To do this, it scans the
@@ -45,8 +43,8 @@ public final class NamingLoader {
     private static final String TYPE_KEY = "type";
     private static final String[] EXTENSIONS = new String[] { "properties" };
 
-    private static void createAndBind(final Properties properties, final Context context, final String name,
-            final Collection<File> extraClasspath) throws NamingException {
+    private static void createAndBind(final Properties properties, final Context context, final String name)
+            throws NamingException {
 
         final String type = properties.getProperty(TYPE_KEY);
         final ResourceFactory<?> factory = ResourceFactoryRegistry.getFactory(type);
@@ -55,9 +53,10 @@ public final class NamingLoader {
             return;
         }
 
-        final Object value = factory.getObjectInstance(properties, extraClasspath);
+        final Object value = factory.getObjectInstance(String.format("%s/%s", context.getNameInNamespace(), name),
+                properties);
         if (value != null) {
-            LOGGER.info("Binding object to '{}/{}' (type: '{}')", context.getNameInNamespace(), name, type);
+            LOGGER.debug("Binding object to '{}/{}' (type: '{}')", context.getNameInNamespace(), name, type);
             execBind(context, name, value);
         }
     }
@@ -88,14 +87,12 @@ public final class NamingLoader {
      *            the directory to scan
      * @param context
      *            the Context to populate
-     * @param extraClasspath
-     *            additional paths to include to the classpath
      * @throws NamingException
      *             if a naming exception is encountered
      * @throws IOException
      *             if an I/O error occurs
      */
-    public void loadDirectory(final File directory, final Context context, final Collection<File> extraClasspath)
+    public void loadDirectory(final File directory, final Context context)
             throws NamingException, IOException {
 
         if (!directory.isDirectory()) {
@@ -110,7 +107,7 @@ public final class NamingLoader {
         for (final File file : files) {
             if (file.isDirectory()) {
                 final Context subcontext = context.createSubcontext(file.getName());
-                loadDirectory(file, subcontext, extraClasspath);
+                loadDirectory(file, subcontext);
             } else {
 
                 final String fileName = file.getName();
@@ -119,7 +116,7 @@ public final class NamingLoader {
                     try (FileInputStream fin = new FileInputStream(file)) {
                         final Properties properties = new Properties();
                         properties.load(fin);
-                        createAndBind(properties, context, baseName, extraClasspath);
+                        createAndBind(properties, context, baseName);
                     }
                 }
             }
