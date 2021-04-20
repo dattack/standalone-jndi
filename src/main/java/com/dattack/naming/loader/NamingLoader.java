@@ -21,8 +21,9 @@ import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.Properties;
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -41,7 +42,7 @@ public final class NamingLoader {
     private static final Logger LOGGER = LoggerFactory.getLogger(NamingLoader.class);
 
     private static final String TYPE_KEY = "type";
-    private static final String[] EXTENSIONS = new String[] { "properties" };
+    private static final String[] EXTENSIONS = new String[]{"properties"};
 
     private static void createAndBind(final Properties properties, final Context context, final String name)
             throws NamingException {
@@ -67,7 +68,7 @@ public final class NamingLoader {
 
         if (obj instanceof Context) {
             context.destroySubcontext(key);
-            obj = null;
+            obj = null; // NOPMD
         }
 
         if (obj == null) {
@@ -82,16 +83,12 @@ public final class NamingLoader {
      * in the hierarchy and binds a new resource for each <code>*.properties</code> file with a
      * <code>ResourceFactory</code> associated.
      *
-     *
-     * @param directory
-     *            the directory to scan
-     * @param context
-     *            the Context to populate
-     * @throws NamingException
-     *             if a naming exception is encountered
-     * @throws IOException
-     *             if an I/O error occurs
+     * @param directory the directory to scan
+     * @param context   the Context to populate
+     * @throws NamingException if a naming exception is encountered
+     * @throws IOException     if an I/O error occurs
      */
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     public void loadDirectory(final File directory, final Context context)
             throws NamingException, IOException {
 
@@ -113,7 +110,7 @@ public final class NamingLoader {
                 final String fileName = file.getName();
                 if (FilenameUtils.isExtension(fileName, EXTENSIONS)) {
                     final String baseName = FilenameUtils.getBaseName(fileName);
-                    try (FileInputStream fin = new FileInputStream(file)) {
+                    try (InputStream fin = Files.newInputStream(file.toPath())) {
                         final Properties properties = new Properties();
                         properties.load(fin);
                         createAndBind(properties, context, baseName);

@@ -15,12 +15,11 @@
  */
 package com.dattack.naming;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static com.dattack.junit.AssertionsExt.*;
 
 /**
  * @author cvarela
@@ -33,9 +32,9 @@ public class ClasspathLoaderTest {
 
         try {
             final InitialContext context = new InitialContext();
-            final String name = "jdbc/env/database/user";
+            final String name = "jdbc/db1";
             final DataSource dataSource = (DataSource) context.lookup(name);
-            assertNotNull(dataSource);
+            assertNotNull(dataSource, String.format("DataSource is null (name: %s)", name));
         } catch (final NamingException e) {
             fail(e.getMessage());
         }

@@ -32,6 +32,8 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.naming.ConfigurationException;
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -102,7 +104,7 @@ public final class StandaloneContextFactory implements InitialContextFactory {
         return FilesystemUtils.locateFile(configDir.toString());
     }
 
-    private static Context loadInitialContext(final Hashtable<?, ?> environment) // NOPMD by cvarela
+    private static Context loadInitialContext(final Map<?, ?> environment) // NOPMD by cvarela
             throws NamingException {
 
         LOGGER.debug("loadInitialContext: '{}'", environment);
@@ -118,28 +120,32 @@ public final class StandaloneContextFactory implements InitialContextFactory {
     }
 
     @Override
+    @SuppressWarnings("PMD.ReplaceHashtableWithMap")
     public Context getInitialContext(final Hashtable<?, ?> environment) throws NamingException {
 
         if (context == null) {
             synchronized (StandaloneContextFactory.class) {
                 if (context == null) {
-                    context = loadInitialContext(setDefaultProperties(environment));
+                    context = loadInitialContext(getDefaultProperties(environment));
                 }
             }
         }
         return context;
     }
 
-    private Hashtable<?, ?> setDefaultProperties(final Hashtable<?, ?> environment) {
+    private Map<?, ?> getDefaultProperties(final Map<?, ?> environment) {
 
-        Hashtable<String, String> table = new Hashtable(environment);
+        final Map<String, String> table = new ConcurrentHashMap<>();
+        environment.forEach((key, value) -> table.put(Objects.toString(key),
+                Objects.toString(value)));
+
         setDefaultValue(table, "jndi.syntax.direction", "left_to_right");
         setDefaultValue(table, "jndi.syntax.separator", "/");
         setDefaultValue(table, "jndi.syntax.ignorecase", "true");
         return table;
     }
 
-    private void setDefaultValue(final Hashtable<String, String> environment, String key, String value) {
+    private void setDefaultValue(final Map<String, String> environment, final String key, final String value) {
         if (!environment.containsKey(key)) {
             environment.put(key, value);
         }

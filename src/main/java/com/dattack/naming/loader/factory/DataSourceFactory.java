@@ -96,8 +96,8 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
 
     public static final String TYPE = "javax.sql.DataSource";
 
-    private boolean atomikosAvailable;
-    private boolean dbcpAvailable;
+    private transient volatile boolean atomikosAvailable;
+    private transient volatile boolean dbcpAvailable;
 
     public DataSourceFactory() {
         this.atomikosAvailable = true;
@@ -118,12 +118,13 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
     private static String getPassword(final AbstractConfiguration configuration)
             throws DattackSecurityException {
 
-        final String password = configuration.getString(PASSWORD_KEY);
+        String password = configuration.getString(PASSWORD_KEY);
 
-        if (password != null && password.startsWith(ENCRYPT_PREFIX)) {
+        if (Objects.nonNull(password) && password.startsWith(ENCRYPT_PREFIX)) {
             final PrivateKey privateKey = getPrivateKey(configuration);
             final String encryptedPassword = password.substring(ENCRYPT_PREFIX.length() + 1);
-            return new String(RsaUtils.decryptBase64(encryptedPassword.getBytes(Charset.defaultCharset()), privateKey),
+            password = new String(RsaUtils.decryptBase64(encryptedPassword.getBytes(Charset.defaultCharset()),
+                privateKey),
                     Charset.defaultCharset());
         }
 
@@ -175,17 +176,16 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
                 // sets plain password
                 mapConfiguration.setProperty(PASSWORD_KEY, plainPassword);
 
-                if (atomikosAvailable && !configuration.getBoolean(DISABLE_ATOMIKOS_POOL_KEY, false)) {
+                if (isAtomikosEnabled(configuration)) {
                     dataSource = createAtomikosDataSource(jndiName, driver, url, user, plainPassword, properties);
                 }
 
-                if (dbcpAvailable && Objects.isNull(dataSource) && !configuration.getBoolean(DISABLE_DBCP_POOL_KEY,
-                        false)) {
+                if (Objects.isNull(dataSource) && isDbcpEnabled(configuration)) {
                     dataSource = createDbcpDataSource(jndiName, driver, url, user, plainPassword, properties);
                 }
             }
 
-            if (dataSource == null) {
+            if (Objects.isNull(dataSource)) {
                 LOGGER.debug("[{}] Connection pool disabled", jndiName);
                 dataSource = new SimpleDataSource(driver, url, user, plainPassword);
             }
@@ -201,25 +201,26 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
         }
     }
 
+    private boolean isAtomikosEnabled(final CompositeConfiguration configuration) {
+        return atomikosAvailable && !configuration.getBoolean(DISABLE_ATOMIKOS_POOL_KEY, false);
+    }
+
+    private boolean isDbcpEnabled(final CompositeConfiguration configuration) {
+        return dbcpAvailable && !configuration.getBoolean(DISABLE_DBCP_POOL_KEY, false);
+    }
+
     private DataSource createDbcpDataSource(final String jndiName, final String driver, final String url,
-                                            final String user, final String plainPassword, Properties properties) {
+                                            final String user, final String plainPassword,
+                                            final Properties properties) {
 
-        String clazzName = "org.apache.commons.dbcp.BasicDataSourceFactory";
-        Class<?> factory;
-
-        try {
-            factory = Class.forName(clazzName);
-        } catch (ClassNotFoundException e) {
-            LOGGER.trace("[{}] DBCP class not found: {} - Cause: {}", jndiName, clazzName, e.getCause());
-            dbcpAvailable = false;
-            return null;
-        }
+        final String clazzName = "org.apache.commons.dbcp.BasicDataSourceFactory";
 
         LOGGER.debug("[{}] Configuring DBCP connection pool (class: {}) ...", jndiName, clazzName);
         DataSource dataSource = null;
         try {
 
-            Properties props = new Properties();
+            final Class<?> factory = Class.forName(clazzName);
+            final Properties props = new Properties();
             props.putAll(properties);
             props.putAll(filterDbcpProperties(properties));
             props.put(DBCP_DRIVER_KEY, driver);
@@ -235,11 +236,14 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
 
             props.put(DBCP_PASSWORD_KEY, plainPassword);
 
-            Method method = factory.getDeclaredMethod("createDataSource", Properties.class);
+            final Method method = factory.getDeclaredMethod("createDataSource", Properties.class);
 
             dataSource = (DataSource) method.invoke(null, props);
 
-        } catch (Throwable t) {
+        } catch (ClassNotFoundException e) {
+            LOGGER.trace("[{}] DBCP class not found: {} - Cause: {}", jndiName, clazzName, e.getCause());
+            dbcpAvailable = false;
+        } catch (final Throwable t) { //NOPMD
             LOGGER.debug("[{}] Unable to configure DBCP connection pool: {} (cause: {}, class:{})", jndiName,
                     t.getMessage(), t.getCause(), t.getClass().getName());
             LOGGER.warn("Trace:", t);
@@ -248,25 +252,17 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
     }
 
     private DataSource createAtomikosDataSource(final String jndiName, final String driver, final String url,
-                                                final String user, final String plainPassword, Properties properties) {
+                                                final String user, final String plainPassword,
+                                                final Properties properties) {
 
-        String clazzName = "com.atomikos.jdbc.AtomikosNonXADataSourceBean";
-
-        Class<?> factory;
-
-        try {
-            factory = Class.forName(clazzName);
-        } catch (ClassNotFoundException e) {
-            LOGGER.trace("[{}] Atomikos class not found: {} - Cause: {}", jndiName, clazzName, e.getCause());
-            atomikosAvailable = false;
-            return null;
-        }
+        final String clazzName = "com.atomikos.jdbc.AtomikosNonXADataSourceBean";
 
         LOGGER.debug("[{}] Configuring Atomikos connection pool (class: {}) ...", jndiName, clazzName);
-        DataSource dataSource;
+        DataSource dataSource = null;
         try {
 
-            Properties atomikosProps = new Properties();
+            final Class<?> factory = Class.forName(clazzName);
+            final Properties atomikosProps = new Properties();
             atomikosProps.putAll(properties);
             atomikosProps.putAll(filterAtomikosProperties(properties));
             atomikosProps.put(ATOMIKOS_DRIVER_KEY, driver);
@@ -286,30 +282,32 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
 
             dataSource = (DataSource) factory.newInstance();
 
-            Class<?> propertyUtilsClass = Class.forName("com.atomikos.beans.PropertyUtils");
-            Method setPropertiesMethod = propertyUtilsClass.getMethod("setProperties", Object.class,
+            final Class<?> propertyUtilsClass = Class.forName("com.atomikos.beans.PropertyUtils");
+            final Method setPropertiesMethod = propertyUtilsClass.getMethod("setProperties", Object.class,
                     Map.class);
             setPropertiesMethod.invoke(null, dataSource, atomikosProps);
 
-        } catch (Throwable t) {
+        } catch (ClassNotFoundException e) {
+            LOGGER.trace("[{}] Atomikos class not found: {} - Cause: {}", jndiName, clazzName, e.getCause());
+            atomikosAvailable = false;
+        } catch (Throwable t) { //NOPMD
             LOGGER.debug("[{}] Unable to configure Atomikos connection pool: {} (cause: {}, class: {})",
                     jndiName, t.getMessage(), t.getCause(), t.getClass().getName());
-            dataSource = null;
         }
         return dataSource;
     }
 
-    private Properties filterAtomikosProperties(Properties properties) {
+    private Properties filterAtomikosProperties(final Properties properties) {
         return filterProperties(properties, ATOMIKOS_PREFIX);
     }
 
-    private Properties filterDbcpProperties(Properties properties) {
+    private Properties filterDbcpProperties(final Properties properties) {
         return filterProperties(properties, DBCP_PREFIX);
     }
 
-    private Properties filterProperties(Properties properties, String prefix) {
+    private Properties filterProperties(final Properties properties, final String prefix) {
 
-        Properties props = new Properties();
+        final Properties props = new Properties();
         properties.forEach((key, value) -> {
             if (key.toString().startsWith(prefix)) {
                 props.put(key.toString().substring(prefix.length()), value);
@@ -323,7 +321,7 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
 
         DataSource result = dataSource;
         if (StringUtils.isNotBlank(script)) {
-            List<String> sqlStatements = Arrays.asList(script.split(";"));
+            final List<String> sqlStatements = Arrays.asList(script.split(";"));
             LOGGER.debug("[{}] Commands to execute on connect: {}", jndiName, sqlStatements);
             result = new InitializableDataSource(result, sqlStatements);
         }

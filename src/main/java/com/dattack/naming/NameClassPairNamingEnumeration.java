@@ -27,7 +27,7 @@ import javax.naming.NameClassPair;
  */
 public class NameClassPairNamingEnumeration extends AbstractNamingEnumeration<NameClassPair> {
 
-    NameClassPairNamingEnumeration(final Map<?, ?> table) {
+    /* default */ NameClassPairNamingEnumeration(final Map<?, ?> table) {
         super(table);
     }
 

@@ -44,12 +44,13 @@ public class StandaloneContext extends AbstractContext {
     }
 
     @Override
+    @SuppressWarnings("PMD.OnlyOneReturn")
     public Context doCreateSubcontext(final Name name) throws NamingException {
 
         LOGGER.debug("Creating subcontext '{}/{}'", getNameInNamespace(), name.toString());
         final Map<Name, Object> subContexts = getSubContexts();
 
-        if (name.size() > 1) {
+        if (name.size() > 1) { // NOPMD
             if (subContexts.containsKey(name.getPrefix(1))) {
                 final Context subContext = (Context) subContexts.get(name.getPrefix(1));
                 return subContext.createSubcontext(name.getSuffix(1));

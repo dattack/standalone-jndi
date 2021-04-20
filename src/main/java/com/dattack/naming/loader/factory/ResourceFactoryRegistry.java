@@ -15,8 +15,8 @@
  */
 package com.dattack.naming.loader.factory;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The registry containing the mapping of resource types and factories.
@@ -24,9 +24,10 @@ import java.util.Map;
  * @author cvarela
  * @since 0.1
  */
+@SuppressWarnings("PMD.ClassNamingConventions")
 public final class ResourceFactoryRegistry {
 
-    private static final Map<String, ResourceFactory<?>> MAPPING = new HashMap<String, ResourceFactory<?>>();
+    private static final Map<String, ResourceFactory<?>> MAPPING = new ConcurrentHashMap<>();
 
     static {
         // default factory list
@@ -41,10 +42,10 @@ public final class ResourceFactoryRegistry {
      * Returns the <code>ResourceFactory</code> associated to the resource type specified. If the resource type is
      * <code>null</code> or unknown then returns <code>null</code>.
      *
-     * @param type
-     *            the resource type, may be <code>null</code>
+     * @param type the resource type, may be <code>null</code>
      * @return the factory associated to the resource type, or <code>null</code> if no one exists
      */
+    @SuppressWarnings("PMD.OnlyOneReturn")
     public static ResourceFactory<?> getFactory(final String type) {
         if (type == null) {
             return null;
