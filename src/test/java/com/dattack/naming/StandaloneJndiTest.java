@@ -19,7 +19,13 @@ import org.junit.jupiter.api.Test;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import static com.dattack.junit.AssertionsExt.*;
+import javax.sql.DataSource;
+import static com.dattack.junit.AssertionsExt.assertContains;
+import static com.dattack.junit.AssertionsExt.assertEquals;
+import static com.dattack.junit.AssertionsExt.assertNotNull;
+import static com.dattack.junit.AssertionsExt.assertNull;
+import static com.dattack.junit.AssertionsExt.assertThrows;
+import static com.dattack.junit.AssertionsExt.fail;
 
 /**
  * @author cvarela
@@ -27,34 +33,34 @@ import static com.dattack.junit.AssertionsExt.*;
  */
 public final class StandaloneJndiTest {
 
-    private static final String VALID_OBJECT_NAME = "db1";
-    private static final String VALID_CONTEXT = "jdbc";
-    private static final String INVALID_OBJECT_NAME = "invalid-db";
     private static final String INVALID_CONTEXT = "invalid-context";
-
-    @Test
-    public void testBind() {
-        try {
-            final InitialContext context = new InitialContext();
-            final String name = getCompositeName("jdbc", "testBind");
-            final Object obj = 10;
-            context.bind(name, obj);
-            assertEquals(obj, context.lookup(name), String.format("Non-equals objects (%s <> %s)", obj,
-                    context.lookup(name)));
-        } catch (final NamingException e) {
-            fail(e.getMessage());
-        }
-    }
+    private static final String INVALID_OBJECT_NAME = "invalid-db";
+    private static final String VALID_CONTEXT = "jdbc";
+    private static final String VALID_OBJECT_NAME = "db1";
 
     private static String getCompositeName(final String context, final String objectName) {
         return String.format("%s/%s", context, objectName);
     }
 
     @Test
-    public void testBindInvalidContext() {
+        /* default */ void testBind() {
+        try {
+            final InitialContext context = new InitialContext();
+            final String name = getCompositeName("jdbc", "testBind");
+            final Object obj = 10;
+            context.bind(name, obj);
+            assertEquals(obj, context.lookup(name), String.format("Non-equals objects (%s <> %s)", obj,
+                context.lookup(name)));
+        } catch (final NamingException e) {
+            fail(e.getMessage());
+        }
+    }
+
+    @Test
+        /* default */ void testBindInvalidContext() {
 
         final Object obj = 10;
-        final Exception exception = assertThrows(NamingException.class, () -> {
+        assertThrows(NamingException.class, () -> {
             final InitialContext context = new InitialContext();
             final String name = getCompositeName(INVALID_CONTEXT, "testBind");
             context.bind(name, obj);
@@ -62,7 +68,7 @@ public final class StandaloneJndiTest {
     }
 
     @Test
-    public void testCreateContext() {
+        /* default */ void testCreateContext() {
         try {
             final InitialContext context = new InitialContext();
             final String name = "testCreateContext";
@@ -74,7 +80,7 @@ public final class StandaloneJndiTest {
     }
 
     @Test
-    public void testCreateMultiContext() {
+        /* default */ void testCreateMultiContext() {
         try {
             final InitialContext context = new InitialContext();
             final String name = getCompositeName(VALID_CONTEXT, "testCreateMultiContext");
@@ -86,7 +92,7 @@ public final class StandaloneJndiTest {
     }
 
     @Test
-    public void testLookupInvalidContext() {
+        /* default */ void testLookupInvalidContext() {
 
         final Exception exception = assertThrows(NamingException.class, () -> {
             final InitialContext context = new InitialContext();
@@ -95,11 +101,11 @@ public final class StandaloneJndiTest {
         });
 
         assertContains(exception.getMessage(), String.format("Invalid subcontext '%s' in context '/'",
-                INVALID_CONTEXT));
+            INVALID_CONTEXT));
     }
 
     @Test
-    public void testLookupInvalidContextAndName() throws NamingException {
+        /* default */ void testLookupInvalidContextAndName() {
 
         final Exception exception = assertThrows(NamingException.class, () -> {
             final InitialContext context = new InitialContext();
@@ -108,20 +114,19 @@ public final class StandaloneJndiTest {
         });
 
         assertContains(exception.getMessage(), String.format("Invalid subcontext '%s' in context '/'",
-                INVALID_CONTEXT));
+            INVALID_CONTEXT));
     }
 
     @Test
-    public void testLookupInvalidObjectName() throws NamingException {
+        /* default */ void testLookupInvalidObjectName() throws NamingException {
         final InitialContext context = new InitialContext();
         final String name = getCompositeName(VALID_CONTEXT, INVALID_OBJECT_NAME);
         final Object obj = context.lookup(name);
         assertNull(obj, String.format("The searched object is not null (name: %s)", name));
     }
-/*
-    @Test
-    public void testLookupValidDataSource() {
 
+    @Test
+        /* default */ void testLookupValidDataSource() {
         try {
             final InitialContext context = new InitialContext();
             final String name = getCompositeName(VALID_CONTEXT, VALID_OBJECT_NAME);
@@ -131,5 +136,4 @@ public final class StandaloneJndiTest {
             fail(e.getMessage());
         }
     }
- */
 }

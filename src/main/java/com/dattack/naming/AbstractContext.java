@@ -394,6 +394,11 @@ public abstract class AbstractContext implements Cloneable, Context {  // NOPMD 
             result = env.get(name.toString());
         }
 
+        if (result instanceof LazyResourceProxy) {
+            final LazyResourceProxy proxy = (LazyResourceProxy) result;
+            result = proxy.getObject();
+        }
+
         return result;
     }
 

@@ -15,6 +15,7 @@
  */
 package com.dattack.naming.loader;
 
+import com.dattack.naming.LazyResourceProxy;
 import com.dattack.naming.loader.factory.ResourceFactory;
 import com.dattack.naming.loader.factory.ResourceFactoryRegistry;
 import org.apache.commons.io.FilenameUtils;
@@ -54,12 +55,10 @@ public final class NamingLoader {
             return;
         }
 
-        final Object value = factory.getObjectInstance(String.format("%s/%s", context.getNameInNamespace(), name),
-                properties);
-        if (value != null) {
-            LOGGER.debug("Binding object to '{}/{}' (type: '{}')", context.getNameInNamespace(), name, type);
-            execBind(context, name, value);
-        }
+        final String jndiName = String.format("%s/%s", context.getNameInNamespace(), name);
+        final Object proxy = new LazyResourceProxy(factory, jndiName, properties);
+        LOGGER.debug("Binding object to '{}/{}' (type: '{}')", context.getNameInNamespace(), name, type);
+        execBind(context, name, proxy);
     }
 
     private static void execBind(final Context context, final String key, final Object value) throws NamingException {
@@ -87,10 +86,11 @@ public final class NamingLoader {
      * @param context   the Context to populate
      * @throws NamingException if a naming exception is encountered
      * @throws IOException     if an I/O error occurs
+     * @throws IllegalArgumentException when parameter 'directory' does not reference to a directory
      */
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
     public void loadDirectory(final File directory, final Context context)
-            throws NamingException, IOException {
+            throws NamingException, IOException, IllegalArgumentException {
 
         if (!directory.isDirectory()) {
             throw new IllegalArgumentException(String.format("'%s' isn't a directory", directory));
