@@ -56,9 +56,8 @@ release tag.
 
 ### javax.sql.DataSource
 
-Standalone-JNDI uses Apache Commons DBCP.
-See [BasicDataSource Configuration Parameters](https://commons.apache.org/proper/commons-dbcp/configuration.html)
-for a detailed list of parameters that can be configured.
+Currently, Standalone-JNDI can be used with one of the following connection pool: Apache Commons DBCP and
+TransactionsEssentials (Atomikos).
 
 The minimum set of properties required to configure this kind of JNDI resource is as follows:
 
@@ -96,6 +95,39 @@ Additionally, it is also possible to configure the following properties:
 
 - disablePool: a flag that allows you to quickly disable the use of the connection pool if it is set. The default value
   is false.
+
+   - disablePool.dbcp: when true disables DBCP only, allowing other connection pools to be used.
+
+   - disablePool.atomikos: when true disables Atomikos only, allowing other connection pools to be used.
+
+#### Apache Commons DBCP
+See [BasicDataSource Configuration Parameters](https://commons.apache.org/proper/commons-dbcp/configuration.html)
+for a detailed list of parameters that can be configured.
+
+You can configure DBCP-specific properties by prefixing them with `dbcp.`:
+
+- `dbcp.driverClassName`: same as property `driverClassName`.
+
+- `dbcp.url`: same as property `url`.
+
+- `dbcp.username`: same as property `username`.
+
+- `dbcp.password`: same as property `password`.
+
+#### TransactionsEssentials (Atomikos)
+See [Configuring TransactionsEssentials](https://www.atomikos.com/Documentation/ConfiguringTransactionsEssentials)
+for a detailed list of parameters that can be configured.
+
+- `atomikos.driverClassName`: same as property `driverClassName`.
+
+- `atomikos.url`: same as property `url`.
+
+- `atomikos.user`: same as property `username`.
+
+- `atomikos.password`: same as property `password`.
+
+**NOTE:** When a datasource has both types of connection pool (DBCP and Atomikos) configured and activated,
+Standalone-JNDI will use Atomikos.
 
 #### Secure password
 
