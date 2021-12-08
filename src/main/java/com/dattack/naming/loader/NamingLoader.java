@@ -114,7 +114,7 @@ public final class NamingLoader {
                         final Properties properties = new Properties();
                         properties.load(fin);
                         createAndBind(properties, context, baseName);
-                    } catch (final Exception e) {
+                    } catch (final NamingException | IOException e) {
                         LOGGER.warn("Unable to bind object from file '{}': {}", file, e.getMessage());
                     }
                 }
