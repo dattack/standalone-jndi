@@ -76,7 +76,7 @@
         <jtoolbox.version>0.5</jtoolbox.version>
         <junit-extensions.version>0.1</junit-extensions.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <sqlite.version>3.32.3.2</sqlite.version>
+        <sqlite.version>3.36.0.3</sqlite.version>
     </properties>
     <dependencies>
         <dependency>
