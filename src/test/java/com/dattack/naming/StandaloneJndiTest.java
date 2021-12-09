@@ -91,6 +91,7 @@ import static com.dattack.junit.AssertionsExt.fail;
         }
     }
 
+    @SuppressWarnings("PMD.JUnitTestContainsTooManyAsserts")
     @Test
         /* package */ void testLookupInvalidContext() {
 
@@ -104,6 +105,7 @@ import static com.dattack.junit.AssertionsExt.fail;
             INVALID_CONTEXT));
     }
 
+    @SuppressWarnings("PMD.JUnitTestContainsTooManyAsserts")
     @Test
         /* package */ void testLookupInvalidContextAndName() {
 
