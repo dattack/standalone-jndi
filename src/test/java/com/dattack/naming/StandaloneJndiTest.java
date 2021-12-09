@@ -133,7 +133,8 @@ import static com.dattack.junit.AssertionsExt.fail;
             final InitialContext context = new InitialContext();
             final String name = getCompositeName(VALID_CONTEXT, VALID_OBJECT_NAME);
             final DataSource dataSource = (DataSource) context.lookup(name);
-            assertNotNull(dataSource);
+            assertNotNull(dataSource, String.format("DataSource must be non-null (%s/%s)",
+                    VALID_CONTEXT, VALID_OBJECT_NAME));
         } catch (final NamingException e) {
             fail(e.getMessage());
         }

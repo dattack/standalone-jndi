@@ -42,13 +42,12 @@ public final class NamingLoader {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NamingLoader.class);
 
-    private static final String TYPE_KEY = "type";
     private static final String[] EXTENSIONS = new String[]{"properties"};
 
     private static void createAndBind(final Properties properties, final Context context, final String name)
             throws NamingException {
 
-        final String type = properties.getProperty(TYPE_KEY);
+        final String type = properties.getProperty(CommonConstants.TYPE_KEY);
         final ResourceFactory<?> factory = ResourceFactoryRegistry.getFactory(type);
         if (factory == null) {
             LOGGER.warn("Unable to get a factory for type '{}'", type);
