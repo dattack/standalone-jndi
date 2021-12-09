@@ -25,10 +25,10 @@ import static com.dattack.junit.AssertionsExt.*;
  * @author cvarela
  * @since 0.1
  */
-public class ClasspathLoaderTest {
+/* package */ class ClasspathLoaderTest {
 
     @Test
-    public void testLookupValidDataSourceExternalJar() {
+    /* package */  void testLookupValidDataSourceExternalJar() {
 
         try {
             final InitialContext context = new InitialContext();
