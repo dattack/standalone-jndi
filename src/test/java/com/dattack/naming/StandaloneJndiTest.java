@@ -31,7 +31,7 @@ import static com.dattack.junit.AssertionsExt.fail;
  * @author cvarela
  * @since 0.1
  */
-public final class StandaloneJndiTest {
+/* package */ final class StandaloneJndiTest {
 
     private static final String INVALID_CONTEXT = "invalid-context";
     private static final String INVALID_OBJECT_NAME = "invalid-db";
@@ -43,7 +43,7 @@ public final class StandaloneJndiTest {
     }
 
     @Test
-        /* default */ void testBind() {
+        /* package */ void testBind() {
         try {
             final InitialContext context = new InitialContext();
             final String name = getCompositeName("jdbc", "testBind");
@@ -57,7 +57,7 @@ public final class StandaloneJndiTest {
     }
 
     @Test
-        /* default */ void testBindInvalidContext() {
+        /* package */ void testBindInvalidContext() {
 
         final Object obj = 10;
         assertThrows(NamingException.class, () -> {
@@ -68,7 +68,7 @@ public final class StandaloneJndiTest {
     }
 
     @Test
-        /* default */ void testCreateContext() {
+        /* package */ void testCreateContext() {
         try {
             final InitialContext context = new InitialContext();
             final String name = "testCreateContext";
@@ -80,7 +80,7 @@ public final class StandaloneJndiTest {
     }
 
     @Test
-        /* default */ void testCreateMultiContext() {
+        /* package */ void testCreateMultiContext() {
         try {
             final InitialContext context = new InitialContext();
             final String name = getCompositeName(VALID_CONTEXT, "testCreateMultiContext");
@@ -91,8 +91,9 @@ public final class StandaloneJndiTest {
         }
     }
 
+    @SuppressWarnings("PMD.JUnitTestContainsTooManyAsserts")
     @Test
-        /* default */ void testLookupInvalidContext() {
+        /* package */ void testLookupInvalidContext() {
 
         final Exception exception = assertThrows(NamingException.class, () -> {
             final InitialContext context = new InitialContext();
@@ -104,8 +105,9 @@ public final class StandaloneJndiTest {
             INVALID_CONTEXT));
     }
 
+    @SuppressWarnings("PMD.JUnitTestContainsTooManyAsserts")
     @Test
-        /* default */ void testLookupInvalidContextAndName() {
+        /* package */ void testLookupInvalidContextAndName() {
 
         final Exception exception = assertThrows(NamingException.class, () -> {
             final InitialContext context = new InitialContext();
@@ -118,7 +120,7 @@ public final class StandaloneJndiTest {
     }
 
     @Test
-        /* default */ void testLookupInvalidObjectName() throws NamingException {
+        /* package */ void testLookupInvalidObjectName() throws NamingException {
         final InitialContext context = new InitialContext();
         final String name = getCompositeName(VALID_CONTEXT, INVALID_OBJECT_NAME);
         final Object obj = context.lookup(name);
@@ -126,12 +128,13 @@ public final class StandaloneJndiTest {
     }
 
     @Test
-        /* default */ void testLookupValidDataSource() {
+        /* package */ void testLookupValidDataSource() {
         try {
             final InitialContext context = new InitialContext();
             final String name = getCompositeName(VALID_CONTEXT, VALID_OBJECT_NAME);
             final DataSource dataSource = (DataSource) context.lookup(name);
-            assertNotNull(dataSource);
+            assertNotNull(dataSource, String.format("DataSource must be non-null (%s/%s)",
+                    VALID_CONTEXT, VALID_OBJECT_NAME));
         } catch (final NamingException e) {
             fail(e.getMessage());
         }

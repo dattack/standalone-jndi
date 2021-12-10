@@ -104,30 +104,41 @@ Additionally, it is also possible to configure the following properties:
 See [BasicDataSource Configuration Parameters](https://commons.apache.org/proper/commons-dbcp/configuration.html)
 for a detailed list of parameters that can be configured.
 
-You can configure DBCP-specific properties by prefixing them with `dbcp.`:
+You can configure DBCP-specific properties by prefixing them with `dbcp.`. The following are some of the most common
+properties:
 
-- `dbcp.driverClassName`: same as property `driverClassName`.
+- `dbcp.initialSize`: The initial number of connections that are created when the pool is started.
 
-- `dbcp.url`: same as property `url`.
+- `dbcp.maxTotal`: The maximum number of active connections that can be allocated from this pool at the same time, or
+negative for no limit.
 
-- `dbcp.username`: same as property `username`.
+- `dbcp.maxIdle`: The maximum number of connections that can remain idle in the pool, without extra ones being released,
+or negative for no limit.
 
-- `dbcp.password`: same as property `password`.
+- `dbcp.minIdle`: The minimum number of connections that can remain idle in the pool, without extra ones being created,
+or zero to create none.
+
+- `dbcp.maxWaitMillis`: The maximum number of milliseconds that the pool will wait (when there are no available
+connections) for a connection to be returned before throwing an exception, or -1 to wait indefinitely.
 
 #### TransactionsEssentials (Atomikos)
 See [Configuring TransactionsEssentials](https://www.atomikos.com/Documentation/ConfiguringTransactionsEssentials)
 for a detailed list of parameters that can be configured.
 
-- `atomikos.driverClassName`: same as property `driverClassName`.
+You can configure DBCP-specific properties by prefixing them with `atomikos.`The following are some of the most common
+properties:
 
-- `atomikos.url`: same as property `url`.
+- `atomikos.maxPoolSize`: the maximum pool size.
 
-- `atomikos.user`: same as property `username`.
+- `atomikos.minPoolSize`: the minimum size of the pool.
 
-- `atomikos.password`: same as property `password`.
+- `atomikos.maxIdleTime`: the maximum amount of seconds that unused excess connections should stay in the pool.
 
-**NOTE:** When a datasource has both types of connection pool (DBCP and Atomikos) configured and activated,
-Standalone-JNDI will use Atomikos.
+- `atomikos.reapTimeout`: the amount of time (in seconds) that the connection pool will allow a connection to be in use,
+before claiming it back.
+
+**NOTE:** when a datasource has both types of connection pool (DBCP and Atomikos) configured and activated,
+Standalone-JNDI will use DBCP.
 
 #### Secure password
 

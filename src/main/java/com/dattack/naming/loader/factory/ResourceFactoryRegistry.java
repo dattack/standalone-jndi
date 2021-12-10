@@ -15,6 +15,8 @@
  */
 package com.dattack.naming.loader.factory;
 
+import com.dattack.naming.loader.CommonConstants;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -31,7 +33,7 @@ public final class ResourceFactoryRegistry {
 
     static {
         // default factory list
-        MAPPING.put(DataSourceFactory.TYPE, new DataSourceFactory());
+        MAPPING.put(CommonConstants.TYPE_DATASOURCE, new DataSourceFactory());
     }
 
     private ResourceFactoryRegistry() {
