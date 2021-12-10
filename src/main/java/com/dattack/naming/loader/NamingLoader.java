@@ -15,19 +15,19 @@
  */
 package com.dattack.naming.loader;
 
+import com.dattack.naming.LazyResourceProxy;
 import com.dattack.naming.loader.factory.ResourceFactory;
 import com.dattack.naming.loader.factory.ResourceFactoryRegistry;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.util.Properties;
 import javax.naming.Context;
 import javax.naming.NamingException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Properties;
 
 /**
  * This class is responsible for instantiating and registering the configured JNDI resources. To do this, it scans the
@@ -42,24 +42,22 @@ public final class NamingLoader {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NamingLoader.class);
 
-    private static final String TYPE_KEY = "type";
-    private static final String[] EXTENSIONS = new String[] { "properties" };
+    private static final String[] EXTENSIONS = new String[]{"properties"};
 
-    private static void createAndBind(final Properties properties, final Context context, final String name,
-            final Collection<File> extraClasspath) throws NamingException {
+    private static void createAndBind(final Properties properties, final Context context, final String name)
+            throws NamingException {
 
-        final String type = properties.getProperty(TYPE_KEY);
+        final String type = properties.getProperty(CommonConstants.TYPE_KEY);
         final ResourceFactory<?> factory = ResourceFactoryRegistry.getFactory(type);
         if (factory == null) {
             LOGGER.warn("Unable to get a factory for type '{}'", type);
             return;
         }
 
-        final Object value = factory.getObjectInstance(properties, extraClasspath);
-        if (value != null) {
-            LOGGER.info("Binding object to '{}/{}' (type: '{}')", context.getNameInNamespace(), name, type);
-            execBind(context, name, value);
-        }
+        final String jndiName = String.format("%s/%s", context.getNameInNamespace(), name);
+        final Object proxy = new LazyResourceProxy(factory, jndiName, properties);
+        LOGGER.debug("Binding object to '{}/{}' (type: '{}')", context.getNameInNamespace(), name, type);
+        execBind(context, name, proxy);
     }
 
     private static void execBind(final Context context, final String key, final Object value) throws NamingException {
@@ -68,7 +66,7 @@ public final class NamingLoader {
 
         if (obj instanceof Context) {
             context.destroySubcontext(key);
-            obj = null;
+            obj = null; // NOPMD
         }
 
         if (obj == null) {
@@ -83,20 +81,15 @@ public final class NamingLoader {
      * in the hierarchy and binds a new resource for each <code>*.properties</code> file with a
      * <code>ResourceFactory</code> associated.
      *
-     *
-     * @param directory
-     *            the directory to scan
-     * @param context
-     *            the Context to populate
-     * @param extraClasspath
-     *            additional paths to include to the classpath
-     * @throws NamingException
-     *             if a naming exception is encountered
-     * @throws IOException
-     *             if an I/O error occurs
+     * @param directory the directory to scan
+     * @param context   the Context to populate
+     * @throws NamingException if a naming exception is encountered
+     * @throws IOException     if an I/O error occurs
+     * @throws IllegalArgumentException when parameter 'directory' does not reference to a directory
      */
-    public void loadDirectory(final File directory, final Context context, final Collection<File> extraClasspath)
-            throws NamingException, IOException {
+    @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
+    public void loadDirectory(final File directory, final Context context)
+            throws NamingException, IOException, IllegalArgumentException {
 
         if (!directory.isDirectory()) {
             throw new IllegalArgumentException(String.format("'%s' isn't a directory", directory));
@@ -110,16 +103,18 @@ public final class NamingLoader {
         for (final File file : files) {
             if (file.isDirectory()) {
                 final Context subcontext = context.createSubcontext(file.getName());
-                loadDirectory(file, subcontext, extraClasspath);
+                loadDirectory(file, subcontext);
             } else {
 
                 final String fileName = file.getName();
                 if (FilenameUtils.isExtension(fileName, EXTENSIONS)) {
                     final String baseName = FilenameUtils.getBaseName(fileName);
-                    try (FileInputStream fin = new FileInputStream(file)) {
+                    try (InputStream fin = Files.newInputStream(file.toPath())) {
                         final Properties properties = new Properties();
                         properties.load(fin);
-                        createAndBind(properties, context, baseName, extraClasspath);
+                        createAndBind(properties, context, baseName);
+                    } catch (final NamingException | IOException e) {
+                        LOGGER.warn("Unable to bind object from file '{}': {}", file, e.getMessage());
                     }
                 }
             }

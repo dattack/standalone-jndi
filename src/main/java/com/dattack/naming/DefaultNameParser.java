@@ -19,7 +19,6 @@ import java.util.Properties;
 
 import javax.naming.CompoundName;
 import javax.naming.Context;
-import javax.naming.InvalidNameException;
 import javax.naming.Name;
 import javax.naming.NameParser;
 import javax.naming.NamingException;
@@ -34,9 +33,9 @@ import org.apache.commons.lang.StringUtils;
  */
 class DefaultNameParser implements NameParser {
 
-    private final Properties properties;
+    private final transient Properties properties;
 
-    DefaultNameParser(final Context parent) throws NamingException {
+    /* default */ DefaultNameParser(final Context parent) throws NamingException {
         this.properties = new Properties();
         properties.putAll(parent.getEnvironment());
     }

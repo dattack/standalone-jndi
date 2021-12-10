@@ -29,18 +29,18 @@ import javax.naming.NamingException;
  */
 abstract class AbstractNamingEnumeration<T> implements NamingEnumeration<T> {
 
-    private Map<?, ?> bindingMap;
-    private Iterator<?> iterator;
+    private transient Map<?, ?> bindingMap;
+    private transient Iterator<?> iterator;
 
-    AbstractNamingEnumeration(final Map<?, ?> bindingMap) {
+    /* default */ AbstractNamingEnumeration(final Map<?, ?> bindingMap) {
         this.bindingMap = bindingMap;
         iterator = this.bindingMap.keySet().iterator();
     }
 
     @Override
     public final void close() {
-        bindingMap = null;
-        iterator = null;
+        bindingMap = null; // NOPMD
+        iterator = null; // NOPMD
     }
 
     /**
@@ -63,6 +63,7 @@ abstract class AbstractNamingEnumeration<T> implements NamingEnumeration<T> {
     }
 
     @Override
+    @SuppressWarnings("PMD.OnlyOneReturn")
     public final boolean hasMoreElements() {
         if (iterator == null) {
             return false;
@@ -79,12 +80,13 @@ abstract class AbstractNamingEnumeration<T> implements NamingEnumeration<T> {
     }
 
     @Override
+    @SuppressWarnings("PMD.OnlyOneReturn")
     public final T nextElement() {
         if (bindingMap == null) {
             return null;
         }
-        final Object name = iterator.next();
 
+        final Object name = iterator.next();
         return create(name.toString(), bindingMap.get(name));
     }
 }

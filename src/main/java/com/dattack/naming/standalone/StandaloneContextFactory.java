@@ -17,6 +17,7 @@ package com.dattack.naming.standalone;
 
 import com.dattack.jtoolbox.commons.configuration.ConfigurationUtil;
 import com.dattack.jtoolbox.io.FilesystemUtils;
+import com.dattack.jtoolbox.util.FilesystemClassLoaderUtils;
 import com.dattack.naming.loader.NamingLoader;
 import org.apache.commons.configuration.BaseConfiguration;
 import org.apache.commons.configuration.CompositeConfiguration;
@@ -24,17 +25,19 @@ import org.apache.commons.configuration.PropertyConverter;
 import org.apache.commons.lang.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.naming.ConfigurationException;
 import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.spi.InitialContextFactory;
-import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.Map.Entry;
 
 /**
  * Initial Context Factory for {@link StandaloneContext}.
@@ -63,7 +66,9 @@ public final class StandaloneContextFactory implements InitialContextFactory {
             final NamingLoader loader = new NamingLoader();
             final Collection<File> extraClasspath = FilesystemUtils
                     .locateFiles(configuration.getList(CLASSPATH_DIRECTORY_PROPERTY));
-            loader.loadDirectory(dir, ctx, extraClasspath);
+
+            FilesystemClassLoaderUtils.ensureClassLoaded(new HashSet<>(extraClasspath));
+            loader.loadDirectory(dir, ctx);
 
             LOGGER.debug("JNDI context is ready");
 
@@ -85,7 +90,7 @@ public final class StandaloneContextFactory implements InitialContextFactory {
         return configuration;
     }
 
-    private static String getResourcesDirectory(final CompositeConfiguration configuration)
+    private static File getResourcesDirectory(final CompositeConfiguration configuration)
             throws ConfigurationException {
 
         final Object configDir = PropertyConverter.interpolate(configuration.getProperty(RESOURCES_DIRECTORY_PROPERTY),
@@ -96,50 +101,51 @@ public final class StandaloneContextFactory implements InitialContextFactory {
                     String.format("JNDI configuration error: missing property '%s'", RESOURCES_DIRECTORY_PROPERTY));
         }
 
-        return configDir.toString();
+        return FilesystemUtils.locateFile(configDir.toString());
     }
 
-    private static Context loadInitialContext(final Hashtable<?, ?> environment) // NOPMD by cvarela
+    private static Context loadInitialContext(final Map<?, ?> environment) // NOPMD by cvarela
             throws NamingException {
 
         LOGGER.debug("loadInitialContext: '{}'", environment);
         final CompositeConfiguration configuration = getConfiguration(environment);
 
-        final Object configDir = getResourcesDirectory(configuration);
-
-        final File dir = FilesystemUtils.locateFile(ObjectUtils.toString(configDir));
-
-        if (dir != null && dir.exists()) {
+        final File dir = getResourcesDirectory(configuration);
+        if (dir.exists()) {
             return createInitialContext(dir, environment, configuration);
         }
 
         throw new ConfigurationException(
-                String.format("JNDI configuration error: directory not exists '%s'", configDir));
+                String.format("JNDI configuration error: the directory does not exists '%s'", dir));
     }
 
     @Override
+    @SuppressWarnings("PMD.ReplaceHashtableWithMap")
     public Context getInitialContext(final Hashtable<?, ?> environment) throws NamingException {
 
         if (context == null) {
             synchronized (StandaloneContextFactory.class) {
                 if (context == null) {
-                    context = loadInitialContext(setDefaultProperties(environment));
+                    context = loadInitialContext(getDefaultProperties(environment));
                 }
             }
         }
         return context;
     }
 
-    private Hashtable<?, ?> setDefaultProperties(final Hashtable<?, ?> environment) {
+    private Map<?, ?> getDefaultProperties(final Map<?, ?> environment) {
 
-        Hashtable<String, String> table = new Hashtable(environment);
+        final Map<String, String> table = new ConcurrentHashMap<>();
+        environment.forEach((key, value) -> table.put(Objects.toString(key),
+                Objects.toString(value)));
+
         setDefaultValue(table, "jndi.syntax.direction", "left_to_right");
         setDefaultValue(table, "jndi.syntax.separator", "/");
         setDefaultValue(table, "jndi.syntax.ignorecase", "true");
         return table;
     }
 
-    private void setDefaultValue(final Hashtable<String, String> environment, String key, String value) {
+    private void setDefaultValue(final Map<String, String> environment, final String key, final String value) {
         if (!environment.containsKey(key)) {
             environment.put(key, value);
         }

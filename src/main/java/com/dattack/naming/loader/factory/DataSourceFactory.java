@@ -17,22 +17,22 @@ package com.dattack.naming.loader.factory;
 
 import com.dattack.jtoolbox.commons.configuration.ConfigurationUtil;
 import com.dattack.jtoolbox.io.FilesystemUtils;
-import com.dattack.jtoolbox.jdbc.DataSourceClasspathDecorator;
+import com.dattack.jtoolbox.jdbc.InitializableDataSource;
 import com.dattack.jtoolbox.jdbc.SimpleDataSource;
 import com.dattack.jtoolbox.security.DattackSecurityException;
 import com.dattack.jtoolbox.security.RsaUtils;
-import com.dattack.jtoolbox.util.PropertiesUtils;
+import com.dattack.naming.loader.CommonConstants;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.apache.commons.configuration.CompositeConfiguration;
-import org.apache.commons.configuration.ConfigurationConverter;
 import org.apache.commons.configuration.MapConfiguration;
-import org.apache.commons.dbcp.BasicDataSourceFactory;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.io.File;
 import java.nio.charset.Charset;
 import java.security.PrivateKey;
-import java.util.Collection;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import javax.naming.ConfigurationException;
 import javax.naming.NamingException;
@@ -56,26 +56,16 @@ import javax.sql.DataSource;
  *      <li>the path to the file indicated in the <i>'globalPrivateKey'</i> property.</li>
  *      <li>the content of the <i>id_rsa</i> file</li>
  *  </ol>
- * Additional properties can be specified to configure a connection pool. See
- * {@link org.apache.commons.dbcp.BasicDataSourceFactory} for more information.
  *
  * @author cvarela
  * @since 0.1
  */
-public class DataSourceFactory implements ResourceFactory<DataSource> {
+public final class DataSourceFactory implements ResourceFactory<DataSource> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceFactory.class);
 
     private static final String ENCRYPT_PREFIX = "encrypt";
-    private static final String PRIVATE_KEY_FILENAME = "privateKey";
-    private static final String GLOBAL_PRIVATE_KEY_FILENAME = "globalPrivateKey";
     private static final String DEFAULT_PRIVATE_KEY = "id_rsa";
-
-    private static final String DRIVER_KEY = "driverClassName";
-    private static final String URL_KEY = "url";
-    private static final String USERNAME_KEY = "username";
-    private static final String PASSWORD_KEY = "password";
-    public static final String TYPE = "javax.sql.DataSource";
 
     private static String getMandatoryProperty(final AbstractConfiguration configuration, final String propertyName)
             throws ConfigurationException {
@@ -87,31 +77,30 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
         return value;
     }
 
-    private static String getPassword(final AbstractConfiguration configuration)
+    private static String decrypt(final String value, final PrivateKey privateKey)
             throws DattackSecurityException {
 
-        final String password = configuration.getString(PASSWORD_KEY);
-
-        if (password != null && password.startsWith(ENCRYPT_PREFIX)) {
-            final PrivateKey privateKey = getPrivateKey(configuration);
-            final String encryptedPassword = password.substring(ENCRYPT_PREFIX.length() + 1);
-            return new String(RsaUtils.decryptBase64(encryptedPassword.getBytes(Charset.defaultCharset()), privateKey),
-                    Charset.defaultCharset());
+        String plainText;
+        if (Objects.nonNull(value) && value.startsWith(ENCRYPT_PREFIX)) {
+            String encryptedValue = value.substring(ENCRYPT_PREFIX.length() + 1);
+            plainText = new String(RsaUtils.decryptBase64(encryptedValue.getBytes(Charset.defaultCharset()),
+                    privateKey), Charset.defaultCharset());
+        } else {
+            plainText = value;
         }
-
-        // plain password
-        return password;
+        return plainText;
     }
 
     private static PrivateKey getPrivateKey(final AbstractConfiguration configuration)
             throws DattackSecurityException {
 
-        String keyFilename = configuration.getString(PRIVATE_KEY_FILENAME);
-        LOGGER.debug("Trying to locate private key ({} = {})", PRIVATE_KEY_FILENAME, keyFilename);
+        String keyFilename = configuration.getString(CommonConstants.PRIVATE_KEY_FILENAME);
+        LOGGER.debug("Trying to locate private key ({} = {})", CommonConstants.PRIVATE_KEY_FILENAME, keyFilename);
 
         if (keyFilename == null) {
-            keyFilename = configuration.getString(GLOBAL_PRIVATE_KEY_FILENAME);
-            LOGGER.debug("Trying to locate private key ({} = {})", GLOBAL_PRIVATE_KEY_FILENAME, keyFilename);
+            keyFilename = configuration.getString(CommonConstants.GLOBAL_PRIVATE_KEY_FILENAME);
+            LOGGER.debug("Trying to locate private key ({} = {})",
+                    CommonConstants.GLOBAL_PRIVATE_KEY_FILENAME, keyFilename);
         }
 
         if (keyFilename == null) {
@@ -124,35 +113,80 @@ public class DataSourceFactory implements ResourceFactory<DataSource> {
     }
 
     @Override
-    public DataSource getObjectInstance(final Properties properties, final Collection<File> extraClasspath)
-            throws NamingException {
+    public DataSource getObjectInstance(final String jndiName, final Properties properties) throws NamingException {
 
         try {
-            final CompositeConfiguration configuration = ConfigurationUtil.createEnvSystemConfiguration();
 
-            MapConfiguration mapConfiguration = new MapConfiguration(PropertiesUtils.toMap(properties));
+            final MapConfiguration mapConfiguration = new MapConfiguration(properties);
+            mapConfiguration.setDelimiterParsingDisabled(true);
+
+            final CompositeConfiguration configuration = ConfigurationUtil.createEnvSystemConfiguration();
             configuration.addConfiguration(mapConfiguration);
 
-            final String driver = getMandatoryProperty(configuration, DRIVER_KEY);
-            final String url = getMandatoryProperty(configuration, URL_KEY);
-            final String plainPassword = getPassword(configuration);
+            final PrivateKey privateKey = getPrivateKey(configuration);
 
-            DataSource dataSource;
-            try {
-                mapConfiguration.setProperty(PASSWORD_KEY, plainPassword);
-                final Properties props = ConfigurationConverter.getProperties(configuration);
-                dataSource = BasicDataSourceFactory.createDataSource(props);
-            } catch (final Exception e) { // NOPMD by cvarela on 8/02/16 22:28
-                // we will use a DataSource without a connection pool
-                LOGGER.info("Unable to instantiate a BasicDataSource object; trying SimpleDataSource: {}",
-                        e.getMessage(), e);
-                final String user = configuration.getString(USERNAME_KEY);
-                dataSource = new SimpleDataSource(driver, url, user, plainPassword);
+            DataSourceConfig dataSourceConfig = new DataSourceConfig()
+                    .withJndiName(jndiName)
+                    .withDriver(decrypt(getMandatoryProperty(configuration, CommonConstants.DRIVER_KEY), privateKey))
+                    .withUrl(decrypt(getMandatoryProperty(configuration, CommonConstants.URL_KEY), privateKey))
+                    .withUser(decrypt(configuration.getString(CommonConstants.USERNAME_KEY), privateKey))
+                    .withPassword(decrypt(configuration.getString(CommonConstants.PASSWORD_KEY), privateKey))
+                    .withProperties(properties);
+
+            DataSource dataSource = null;
+            LOGGER.debug("[{}] Instantiating datasource '{}'@'{}'", jndiName, dataSourceConfig.getUser(),
+                    dataSourceConfig.getUrl());
+
+            if (!configuration.getBoolean(CommonConstants.DISABLE_POOL_KEY, false)) {
+                if (isDbcpEnabled(configuration)) {
+                    dataSource = DbcpPoolFactory.getInstance().createDataSource(dataSourceConfig);
+                }
+
+                if (Objects.isNull(dataSource) && isAtomikosEnabled(configuration)) {
+                    dataSource = AtomikosPoolFactory.getInstance().createDataSource(dataSourceConfig);
+                }
             }
 
-            return new DataSourceClasspathDecorator(dataSource, extraClasspath);
+            if (Objects.isNull(dataSource)) {
+                LOGGER.debug("[{}] Connection pool disabled", jndiName);
+                dataSource = new SimpleDataSource(dataSourceConfig.getDriver(),
+                        dataSourceConfig.getUrl(),
+                        dataSourceConfig.getUser(),
+                        dataSourceConfig.getPassword());
+            }
+
+            // include on-connect script, if one exists
+            dataSource = decorateWithOnConnectScript(jndiName,
+                    configuration.getString(CommonConstants.ON_CONNECT_SCRIPT_KEY),
+                    dataSource);
+
+            LOGGER.info("[{}] Datasource '{}'@'{}': {}", jndiName, dataSourceConfig.getUser(),
+                    dataSourceConfig.getUrl(), dataSource.getClass());
+            return dataSource;
         } catch (final DattackSecurityException e) {
             throw new SecurityConfigurationException(e);
         }
+    }
+
+    private boolean isAtomikosEnabled(final CompositeConfiguration configuration) {
+        return AtomikosPoolFactory.getInstance().isAvailable()
+                && !configuration.getBoolean(CommonConstants.DISABLE_ATOMIKOS_POOL_KEY, false);
+    }
+
+    private boolean isDbcpEnabled(final CompositeConfiguration configuration) {
+        return DbcpPoolFactory.getInstance().isAvailable()
+                && !configuration.getBoolean(CommonConstants.DISABLE_DBCP_POOL_KEY, false);
+    }
+
+    private DataSource decorateWithOnConnectScript(final String jndiName, final String script,
+                                                   final DataSource dataSource) {
+
+        DataSource result = dataSource;
+        if (StringUtils.isNotBlank(script)) {
+            final List<String> sqlStatements = Arrays.asList(script.split(";"));
+            LOGGER.debug("[{}] Commands to execute on connect: {}", jndiName, sqlStatements);
+            result = new InitializableDataSource(result, sqlStatements);
+        }
+        return result;
     }
 }
