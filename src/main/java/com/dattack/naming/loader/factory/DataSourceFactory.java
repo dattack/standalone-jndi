@@ -77,11 +77,14 @@ public final class DataSourceFactory implements ResourceFactory<DataSource> {
         return value;
     }
 
-    private static String decrypt(final String value, final PrivateKey privateKey)
-            throws DattackSecurityException {
+    private static String decrypt(final String value, final PrivateKey privateKey, final String jndiName)
+            throws DattackSecurityException, NullPointerException {
 
         String plainText;
-        if (Objects.nonNull(value) && value.startsWith(ENCRYPT_PREFIX)) {
+        if (StringUtils.startsWithIgnoreCase(value, ENCRYPT_PREFIX)) {
+            Objects.requireNonNull(privateKey, //
+                    String.format("A private key is required to decrypt the datasource configuration (JNDI name: %s)",
+                            jndiName));
             String encryptedValue = value.substring(ENCRYPT_PREFIX.length() + 1);
             plainText = new String(RsaUtils.decryptBase64(encryptedValue.getBytes(Charset.defaultCharset()),
                     privateKey), Charset.defaultCharset());
@@ -91,25 +94,25 @@ public final class DataSourceFactory implements ResourceFactory<DataSource> {
         return plainText;
     }
 
-    private static PrivateKey getPrivateKey(final AbstractConfiguration configuration)
-            throws DattackSecurityException {
+    private static PrivateKey getPrivateKey(final String jndiName, final AbstractConfiguration configuration) {
 
         String keyFilename = configuration.getString(CommonConstants.PRIVATE_KEY_FILENAME);
-        LOGGER.debug("Trying to locate private key ({} = {})", CommonConstants.PRIVATE_KEY_FILENAME, keyFilename);
 
         if (keyFilename == null) {
             keyFilename = configuration.getString(CommonConstants.GLOBAL_PRIVATE_KEY_FILENAME);
-            LOGGER.debug("Trying to locate private key ({} = {})",
-                    CommonConstants.GLOBAL_PRIVATE_KEY_FILENAME, keyFilename);
         }
 
         if (keyFilename == null) {
             keyFilename = FilesystemUtils.locateFile(DEFAULT_PRIVATE_KEY).getAbsolutePath();
-            LOGGER.debug("Trying to locate private key (default = {})", keyFilename);
         }
 
-        LOGGER.debug("Loading private key '{}'", keyFilename);
-        return RsaUtils.loadPrivateKey(keyFilename);
+        try {
+            LOGGER.debug("[{}] Trying to load the private key '{}'", jndiName, keyFilename);
+            return RsaUtils.loadPrivateKey(keyFilename);
+        } catch (DattackSecurityException e) {
+            LOGGER.debug("[{}] Unable to load the private key '{}'", jndiName, keyFilename);
+        }
+        return null;
     }
 
     @Override
@@ -123,14 +126,19 @@ public final class DataSourceFactory implements ResourceFactory<DataSource> {
             final CompositeConfiguration configuration = ConfigurationUtil.createEnvSystemConfiguration();
             configuration.addConfiguration(mapConfiguration);
 
-            final PrivateKey privateKey = getPrivateKey(configuration);
+            final PrivateKey privateKey = getPrivateKey(jndiName, configuration);
 
             DataSourceConfig dataSourceConfig = new DataSourceConfig()
                     .withJndiName(jndiName)
-                    .withDriver(decrypt(getMandatoryProperty(configuration, CommonConstants.DRIVER_KEY), privateKey))
-                    .withUrl(decrypt(getMandatoryProperty(configuration, CommonConstants.URL_KEY), privateKey))
-                    .withUser(decrypt(configuration.getString(CommonConstants.USERNAME_KEY), privateKey))
-                    .withPassword(decrypt(configuration.getString(CommonConstants.PASSWORD_KEY), privateKey))
+                    .withDriver(decrypt(getMandatoryProperty(configuration, CommonConstants.DRIVER_KEY), //
+                            privateKey, jndiName)) //
+                    .withUrl(decrypt(
+                            getMandatoryProperty(configuration, CommonConstants.URL_KEY), //
+                            privateKey, jndiName)) //
+                    .withUser(decrypt(configuration.getString(CommonConstants.USERNAME_KEY), //
+                            privateKey, jndiName)) //
+                    .withPassword(decrypt(configuration.getString(CommonConstants.PASSWORD_KEY), //
+                            privateKey, jndiName)) //
                     .withProperties(properties);
 
             DataSource dataSource = null;
