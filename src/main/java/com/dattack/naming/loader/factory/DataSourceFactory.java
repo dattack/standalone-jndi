@@ -22,12 +22,15 @@ import com.dattack.jtoolbox.jdbc.SimpleDataSource;
 import com.dattack.jtoolbox.security.DattackSecurityException;
 import com.dattack.jtoolbox.security.RsaUtils;
 import com.dattack.naming.loader.CommonConstants;
+import com.dattack.naming.loader.factory.jdbc.atomikos.AtomikosPoolFactory;
+import com.dattack.naming.loader.factory.jdbc.dbcp.DbcpPoolFactory;
 import org.apache.commons.configuration.AbstractConfiguration;
 import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.configuration.MapConfiguration;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.nio.charset.Charset;
 import java.security.PrivateKey;
 import java.util.Arrays;

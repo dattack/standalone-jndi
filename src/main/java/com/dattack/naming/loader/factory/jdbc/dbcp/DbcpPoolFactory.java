@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.dattack.naming.loader.factory;
+package com.dattack.naming.loader.factory.jdbc.dbcp;
+
+import com.dattack.naming.loader.factory.AbstractPoolFactory;
+import com.dattack.naming.loader.factory.DataSourceConfig;
 
 import java.lang.reflect.Method;
 import java.util.Properties;
@@ -42,7 +45,7 @@ public final class DbcpPoolFactory extends AbstractPoolFactory {
     @Override
     public DataSource createDataSource(final DataSourceConfig dataSourceConfig) {
 
-        final String clazzName = "org.apache.commons.dbcp.BasicDataSourceFactory";
+        final String clazzName = "org.apache.commons.dbcp2.BasicDataSourceFactory";
 
         log(dataSourceConfig, "Configuring datasource (driver: {}) ...", dataSourceConfig.getDriver());
         DataSource dataSource = null;
@@ -53,6 +56,7 @@ public final class DbcpPoolFactory extends AbstractPoolFactory {
             final Class<?> factory = Class.forName(clazzName);
             final Method method = factory.getDeclaredMethod("createDataSource", Properties.class);
             dataSource = (DataSource) method.invoke(null, poolProperties);
+            dataSource = new DbcpDataSource(dataSource);
 
         } catch (ClassNotFoundException e) {
             log(dataSourceConfig, e, "Class not found");

@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.dattack.naming.loader.factory;
+package com.dattack.naming.loader.factory.jdbc.atomikos;
+
+import com.dattack.naming.loader.factory.AbstractPoolFactory;
+import com.dattack.naming.loader.factory.DataSourceConfig;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
