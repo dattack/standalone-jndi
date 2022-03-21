@@ -29,7 +29,12 @@ import javax.sql.DataSource;
  */
 public class DbcpDataSource extends AbstractDataSourceDecorator {
 
-    DbcpDataSource(final DataSource delegate) {
+    /**
+     * Creates a new instance.
+     *
+     * @param delegate the delegate datasource
+     */
+    /* default */ DbcpDataSource(final DataSource delegate) {
         super(delegate);
     }
 

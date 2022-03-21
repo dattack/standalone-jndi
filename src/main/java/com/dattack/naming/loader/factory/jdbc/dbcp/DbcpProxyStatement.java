@@ -47,12 +47,14 @@ public class DbcpProxyStatement<S extends Statement> implements ProxyStatement<S
         return new DbcpProxyStatement<>(connection, delegate);
     }
 
+    @Override
+    @SuppressWarnings("PMD.CloseResource")
     public S getInnermostDelegate() {
         S s = getDelegate();
         while (s instanceof JdbcObjectProxy) {
             JdbcObjectProxy<S> other = (JdbcObjectProxy<S>) s;
             s = other.getDelegate();
-            if (this == s) {
+            if (this == s) { //NOPMD - suppressed CompareObjectsWithEquals - no innermost delegate found!
                 return null;
             }
         }

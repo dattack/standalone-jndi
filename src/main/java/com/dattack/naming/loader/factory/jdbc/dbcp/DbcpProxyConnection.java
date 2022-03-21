@@ -66,6 +66,7 @@ public class DbcpProxyConnection implements ProxyConnection {
         return DbcpProxyStatement.build(this, statement);
     }
 
+    @Override
     public Connection getDelegate() {
         return delegate;
     }

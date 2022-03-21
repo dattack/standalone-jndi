@@ -27,8 +27,8 @@ import java.sql.Statement;
  * @author cvarela
  * @since 0.5
  */
-@SuppressWarnings({"PMD.ExcessivePublicCount", "PMD.TooManyMethods", "checkstyle:AbbreviationAsWordInName"})
-public class DbcpProxyResultSet implements ProxyResultSet {
+@SuppressWarnings({ "PMD.ExcessivePublicCount", "PMD.TooManyMethods", "checkstyle:AbbreviationAsWordInName" })
+public final class DbcpProxyResultSet implements ProxyResultSet {
 
     private final DbcpProxyStatement<?> statement;
     private final ResultSet delegate;
@@ -38,7 +38,14 @@ public class DbcpProxyResultSet implements ProxyResultSet {
         this.delegate = delegate;
     }
 
-    protected static DbcpProxyResultSet build(DbcpProxyStatement<?> statement, ResultSet delegate) {
+    /**
+     * Creates a new instance of DbcpProxyResultSet.
+     *
+     * @param statement the statement used to create the delegate ResultSet
+     * @param delegate the delegate ResultSet
+     * @return the new instance of DbcpProxyResultSet
+     */
+    /* default */ static DbcpProxyResultSet build(DbcpProxyStatement<?> statement, ResultSet delegate) {
         return new DbcpProxyResultSet(statement, delegate);
     }
 
