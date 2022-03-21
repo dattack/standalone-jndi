@@ -29,15 +29,16 @@ import java.sql.SQLException;
  * @author cvarela
  * @since 0.5
  */
-@SuppressWarnings({"PMD", "checkstyle:AbbreviationAsWordInName"})
+@SuppressWarnings({ "PMD", "checkstyle:AbbreviationAsWordInName" })
 public class DbcpProxyNamedPreparedStatement extends DbcpProxyPreparedStatement<PreparedStatement>
-        implements ProxyNamedPreparedStatement {
+    implements ProxyNamedPreparedStatement
+{
 
     private final transient NamedPreparedStatementConfig namedPreparedStatementConfig;
 
-    protected DbcpProxyNamedPreparedStatement(final DbcpProxyConnection connection,
-            final PreparedStatement delegate,
-            final NamedPreparedStatementConfig namedPreparedStatementConfig) {
+    protected DbcpProxyNamedPreparedStatement(final DbcpProxyConnection connection, final PreparedStatement delegate,
+        final NamedPreparedStatementConfig namedPreparedStatementConfig)
+    {
         super(connection, delegate);
         this.namedPreparedStatementConfig = namedPreparedStatementConfig;
     }
@@ -52,10 +53,11 @@ public class DbcpProxyNamedPreparedStatement extends DbcpProxyPreparedStatement<
      * @throws SQLException if a database access error occurs or this method is called on a closed connection
      */
     public static DbcpProxyNamedPreparedStatement build(final DbcpProxyConnection connection,
-            final String sql) throws SQLException {
+        final String sql) throws SQLException
+    {
         final NamedPreparedStatementConfig preparedStatementConfig = NamedPreparedStatementConfig.parse(sql);
         return new DbcpProxyNamedPreparedStatement(connection, connection.prepareStatement(
-                preparedStatementConfig.getCompiledSql()), preparedStatementConfig);
+            preparedStatementConfig.getCompiledSql()), preparedStatementConfig);
     }
 
     @Override

@@ -27,15 +27,16 @@ import java.sql.CallableStatement;
  * @since 0.5
  */
 public final class DbcpProxyCallableStatement extends DbcpProxyPreparedStatement<CallableStatement>
-        implements ProxyCallableStatement {
+    implements ProxyCallableStatement
+{
 
-    private DbcpProxyCallableStatement(final DbcpProxyConnection connection,
-            final CallableStatement delegate) {
+    private DbcpProxyCallableStatement(final DbcpProxyConnection connection, final CallableStatement delegate) {
         super(connection, delegate);
     }
 
-    protected static DbcpProxyCallableStatement build(final DbcpProxyConnection connection,
-            final CallableStatement delegate) {
+    /* default */ static DbcpProxyCallableStatement build(final DbcpProxyConnection connection, //
+        final CallableStatement delegate)
+    {
         return new DbcpProxyCallableStatement(connection, delegate);
     }
 }

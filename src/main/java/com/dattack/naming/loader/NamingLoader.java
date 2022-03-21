@@ -21,6 +21,7 @@ import com.dattack.naming.loader.factory.ResourceFactoryRegistry;
 import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,13 +41,12 @@ import javax.naming.NamingException;
  */
 public final class NamingLoader {
 
+    private static final String[] EXTENSIONS = new String[]{ "properties" };
     private static final Logger LOGGER = LoggerFactory.getLogger(NamingLoader.class);
 
-    private static final String[] EXTENSIONS = new String[]{"properties"};
-
-    private static void createAndBind(final Properties properties, final Context context, final String name)
-            throws NamingException {
-
+    private static void createAndBind(final Properties properties, final Context context,
+        final String name) throws NamingException
+    {
         final String type = properties.getProperty(CommonConstants.TYPE_KEY);
         final ResourceFactory<?> factory = ResourceFactoryRegistry.getFactory(type);
         if (factory == null) {
@@ -83,13 +83,14 @@ public final class NamingLoader {
      *
      * @param directory the directory to scan
      * @param context   the Context to populate
-     * @throws NamingException if a naming exception is encountered
-     * @throws IOException     if an I/O error occurs
+     * @throws NamingException          if a naming exception is encountered
+     * @throws IOException              if an I/O error occurs
      * @throws IllegalArgumentException when parameter 'directory' does not reference to a directory
      */
     @SuppressWarnings("PMD.AvoidInstantiatingObjectsInLoops")
-    public void loadDirectory(final File directory, final Context context)
-            throws NamingException, IOException, IllegalArgumentException {
+    public void loadDirectory(final File directory,
+        final Context context) throws NamingException, IOException, IllegalArgumentException
+    {
 
         if (!directory.isDirectory()) {
             throw new IllegalArgumentException(String.format("'%s' isn't a directory", directory));

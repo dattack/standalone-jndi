@@ -16,6 +16,7 @@
 package com.dattack.naming;  // NOPMD by cvarela
 
 import org.apache.commons.lang.StringUtils;
+
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Objects;
@@ -45,15 +46,11 @@ import javax.naming.OperationNotSupportedException;
 @SuppressWarnings("PMD.AvoidDuplicateLiterals")
 public abstract class AbstractContext implements Cloneable, Context {  // NOPMD by cvarela
 
+    private final NameParser nameParser;
     private transient volatile boolean closed;
-
     // the environment properties
     private Hashtable<Object, Object> env; // NOPMD by cvarela on 8/02/16 22:32
-
     private Name nameInNamespace;
-
-    private final NameParser nameParser;
-
     // the direct subcontext
     private Hashtable<Name, Context> subContexts = new Hashtable<>();   // NOPMD by cvarela
 
@@ -74,6 +71,15 @@ public abstract class AbstractContext implements Cloneable, Context {  // NOPMD 
         nameParser = new DefaultNameParser(this);
         nameInNamespace = nameParser.parse("");
     }
+
+    /**
+     * Creates a new subcontext.
+     *
+     * @param name the name of the context to create
+     * @return the subcontext
+     * @throws NamingException if an error occurs
+     */
+    public abstract Context doCreateSubcontext(Name name) throws NamingException;
 
     @Override
     public Object addToEnvironment(final String name, final Object object) {
@@ -104,7 +110,7 @@ public abstract class AbstractContext implements Cloneable, Context {  // NOPMD 
 
             if (isNameAlreadyBound(name)) {
                 throw new NameAlreadyBoundException(
-                        String.format("Name %s already bound. Use rebind() to override", name.toString()));
+                    String.format("Name %s already bound. Use rebind() to override", name));
             }
 
             if (object instanceof Context) {
@@ -148,7 +154,7 @@ public abstract class AbstractContext implements Cloneable, Context {  // NOPMD 
 
         if (Objects.isNull(name) || Objects.isNull(prefix)) {
             throw new InvalidNameException(
-                    String.format("Unable to compose name with null values (prefix: %s, name: %s)", prefix, name));
+                String.format("Unable to compose name with null values (prefix: %s, name: %s)", prefix, name));
         }
 
         final Name composeName = (CompoundName) prefix.clone();
@@ -207,33 +213,6 @@ public abstract class AbstractContext implements Cloneable, Context {  // NOPMD 
         destroySubcontext(nameParser.parse(name));
     }
 
-    private boolean isNameAlreadyBound(final Name name) {
-        return objectTable.containsKey(name) || subContexts.containsKey(name) || env.containsKey(name.toString());
-    }
-
-    private void destroySubcontexts() throws NamingException {
-        for (final Name name : subContexts.keySet()) {
-            destroySubcontext(name);
-        }
-    }
-
-    /**
-     * Creates a new subcontext.
-     *
-     * @param name
-     *            the name of the context to create
-     * @return the subcontext
-     * @throws NamingException
-     *             if an error occurs
-     */
-    public abstract Context doCreateSubcontext(Name name) throws NamingException;
-
-    private void ensureContextNotClosed() throws NamingException {
-        if (closed) {
-            throw new CannotProceedException("Context is closed");
-        }
-    }
-
     @Override
     @SuppressWarnings("PMD.ReplaceHashtableWithMap")
     public Hashtable<?, ?> getEnvironment() { //NOPMD
@@ -252,12 +231,26 @@ public abstract class AbstractContext implements Cloneable, Context {  // NOPMD 
         return nameInNamespace.toString();
     }
 
+    /**
+     * Sets the full name of this context within its own namespace.
+     *
+     * @param name the context's name
+     * @throws NamingException if a name already set
+     */
+    protected void setNameInNamespace(final Name name) throws NamingException {
+        if (nameInNamespace != null && !nameInNamespace.isEmpty()) {
+            throw new NamingException("Name already set.");
+        }
+        nameInNamespace = name;
+    }
+
     @Override
     @SuppressWarnings("PMD.OnlyOneReturn")
     public NameParser getNameParser(final Name name) throws NamingException {
 
-        if (Objects.isNull(name) || name.isEmpty()
-                || (name.size() == 1 && name.toString().equals(getNameInNamespace()))) { //NOPMD
+        if (Objects.isNull(name) || name.isEmpty() //
+            || (name.size() == 1 && name.toString().equals(getNameInNamespace())))
+        {
             return nameParser;
         }
 
@@ -272,26 +265,6 @@ public abstract class AbstractContext implements Cloneable, Context {  // NOPMD 
     @Override
     public NameParser getNameParser(final String name) throws NamingException {
         return getNameParser(nameParser.parse(name));
-    }
-
-    private Context getParentContext(final Name name) throws NamingException {
-
-        final Object context = lookup(name.getPrefix(name.size() - 1));
-        if (context instanceof Context) {
-            return (Context) context;
-        }
-        throw new NamingException(String.format("Cannot unbind object. Target context does not exist (%s)",
-                name.getPrefix(name.size() - 1)));
-    }
-
-    /**
-     * Returns the subcontexts of this context.
-     *
-     * @return the subcontexts of this context.
-     */
-    @SuppressWarnings("unchecked")
-    protected Map<Name, Object> getSubContexts() {
-        return (Map<Name, Object>) subContexts.clone();
     }
 
     @Override
@@ -357,7 +330,7 @@ public abstract class AbstractContext implements Cloneable, Context {  // NOPMD 
     }
 
     @Override
-    @SuppressWarnings({"PMD.OnlyOneReturn", "PMD.CyclomaticComplexity"})
+    @SuppressWarnings({ "PMD.OnlyOneReturn", "PMD.CyclomaticComplexity" })
     public Object lookup(final Name name) throws NamingException {
 
         ensureContextNotClosed();
@@ -381,8 +354,8 @@ public abstract class AbstractContext implements Cloneable, Context {  // NOPMD 
                 return subContexts.get(name.getPrefix(1)).lookup(name.getSuffix(1));
             }
             throw new NamingException(
-                    String.format("Invalid subcontext '%s' in context '%s'", name.getPrefix(1).toString(),
-                            StringUtils.isBlank(getNameInNamespace()) ? "/" : getNameInNamespace()));
+                String.format("Invalid subcontext '%s' in context '%s'", name.getPrefix(1).toString(),
+                              StringUtils.isBlank(getNameInNamespace()) ? "/" : getNameInNamespace()));
         }
 
         Object result = null; // not found
@@ -462,7 +435,7 @@ public abstract class AbstractContext implements Cloneable, Context {  // NOPMD 
 
         if (lookup(newName) != null) {
             throw new NameAlreadyBoundException(
-                    String.format("Cannot rename object: name already bound (%s)", newName));
+                String.format("Cannot rename object: name already bound (%s)", newName));
         }
 
         unbind(oldName);
@@ -473,21 +446,6 @@ public abstract class AbstractContext implements Cloneable, Context {  // NOPMD 
     @Override
     public void rename(final String oldName, final String newName) throws NamingException {
         rename(nameParser.parse(oldName), nameParser.parse(newName));
-    }
-
-    /**
-     * Sets the full name of this context within its own namespace.
-     *
-     * @param name
-     *            the context's name
-     * @throws NamingException
-     *             if a name already set
-     */
-    protected void setNameInNamespace(final Name name) throws NamingException {
-        if (nameInNamespace != null && !nameInNamespace.isEmpty()) {
-            throw new NamingException("Name already set.");
-        }
-        nameInNamespace = name;
     }
 
     @Override
@@ -512,5 +470,41 @@ public abstract class AbstractContext implements Cloneable, Context {  // NOPMD 
     @Override
     public void unbind(final String name) throws NamingException {
         unbind(nameParser.parse(name));
+    }
+
+    /**
+     * Returns the subcontexts of this context.
+     *
+     * @return the subcontexts of this context.
+     */
+    @SuppressWarnings("unchecked")
+    protected Map<Name, Object> getSubContexts() {
+        return (Map<Name, Object>) subContexts.clone();
+    }
+
+    private boolean isNameAlreadyBound(final Name name) {
+        return objectTable.containsKey(name) || subContexts.containsKey(name) || env.containsKey(name.toString());
+    }
+
+    private void destroySubcontexts() throws NamingException {
+        for (final Name name : subContexts.keySet()) {
+            destroySubcontext(name);
+        }
+    }
+
+    private void ensureContextNotClosed() throws NamingException {
+        if (closed) {
+            throw new CannotProceedException("Context is closed");
+        }
+    }
+
+    private Context getParentContext(final Name name) throws NamingException {
+
+        final Object context = lookup(name.getPrefix(name.size() - 1));
+        if (context instanceof Context) {
+            return (Context) context;
+        }
+        throw new NamingException(
+            String.format("Cannot unbind object. Target context does not exist (%s)", name.getPrefix(name.size() - 1)));
     }
 }

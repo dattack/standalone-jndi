@@ -40,20 +40,37 @@ public abstract class AbstractPoolFactory {
         this.available = true;
     }
 
-    protected void logPoolConfiguration(final DataSourceConfig dataSourceConfig, final Properties properties) {
-        if (LOGGER.isDebugEnabled()) {
-            Properties hiddenPassProperties = new Properties();
-            for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-                Object key = entry.getKey();
-                Object value = entry.getValue();
-                if (key.toString().contains("pass")) {
-                    hiddenPassProperties.put(key, "*****");
-                } else {
-                    hiddenPassProperties.put(key, value);
-                }
+    protected static Properties filterProperties(final Properties properties, final String prefix) {
+
+        final Properties props = new Properties();
+        properties.forEach((key, value) -> {
+            if (key.toString().startsWith(prefix)) {
+                props.put(key.toString().substring(prefix.length()), value);
             }
-            log(dataSourceConfig, "Using configuration: {}", hiddenPassProperties);
-        }
+        });
+        return props;
+    }
+
+    public abstract DataSource createDataSource(final DataSourceConfig dataSourceConfig);
+
+    public abstract String getDriverKey();
+
+    public abstract String getPasswordKey();
+
+    public abstract String getPrefixKey();
+
+    public abstract String getTypeName();
+
+    public abstract String getUrlKey();
+
+    public abstract String getUsernameKey();
+
+    public final void disable() {
+        this.available = false;
+    }
+
+    public final boolean isAvailable() {
+        return available;
     }
 
     protected Properties computeProperties(final DataSourceConfig dataSourceConfig) {
@@ -73,20 +90,9 @@ public abstract class AbstractPoolFactory {
         return poolProperties;
     }
 
-    protected static Properties filterProperties(final Properties properties, final String prefix) {
-
-        final Properties props = new Properties();
-        properties.forEach((key, value) -> {
-            if (key.toString().startsWith(prefix)) {
-                props.put(key.toString().substring(prefix.length()), value);
-            }
-        });
-        return props;
-    }
-
     protected void log(final DataSourceConfig dataSourceConfig, final Throwable t, final String message,
-                       final Object... objects) {
-
+        final Object... objects)
+    {
         if (LOGGER.isDebugEnabled()) {
             Object[] params = new Object[4 + objects.length];
             params[0] = dataSourceConfig.getJndiName();
@@ -94,7 +100,7 @@ public abstract class AbstractPoolFactory {
             params[params.length - 3] = Objects.toString(t.getMessage(), "");
             params[params.length - 2] = Objects.toString(t.getCause(), "");
             params[params.length - 1] = Objects.toString(t.getClass().getName(), "");
-            log(message + ": {} (cause: {}, class: {})", params);
+            doLog(message + ": {} (cause: {}, class: {})", params);
         }
     }
 
@@ -104,33 +110,27 @@ public abstract class AbstractPoolFactory {
             Object[] params = new Object[1 + objects.length];
             params[0] = dataSourceConfig.getJndiName();
             System.arraycopy(objects, 0, params, 1, objects.length);
-            log(message, params);
+            doLog(message, params);
         }
     }
 
-    private void log(final String message, final Object... objects) {
+    protected void logPoolConfiguration(final DataSourceConfig dataSourceConfig, final Properties properties) {
+        if (LOGGER.isDebugEnabled()) {
+            Properties hiddenPassProperties = new Properties();
+            for (Map.Entry<Object, Object> entry : properties.entrySet()) {
+                Object key = entry.getKey();
+                Object value = entry.getValue();
+                if (key.toString().contains("pass")) {
+                    hiddenPassProperties.put(key, "*****");
+                } else {
+                    hiddenPassProperties.put(key, value);
+                }
+            }
+            log(dataSourceConfig, "Using configuration: {}", hiddenPassProperties);
+        }
+    }
+
+    private void doLog(final String message, final Object... objects) {
         LOGGER.debug("[{}] <" + getTypeName() + "> " + message, objects);
     }
-
-    public abstract DataSource createDataSource(final DataSourceConfig dataSourceConfig);
-
-    public final boolean isAvailable() {
-        return available;
-    }
-
-    public final void disable() {
-        this.available = false;
-    }
-
-    public abstract String getTypeName();
-
-    public abstract String getPrefixKey();
-
-    public abstract String getDriverKey();
-
-    public abstract String getUrlKey();
-
-    public abstract String getUsernameKey();
-
-    public abstract String getPasswordKey();
 }

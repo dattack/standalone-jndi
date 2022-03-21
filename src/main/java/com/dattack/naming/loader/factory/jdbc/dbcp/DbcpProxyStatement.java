@@ -31,7 +31,7 @@ import java.sql.Statement;
  * @author cvarela
  * @since 0.5
  */
-@SuppressWarnings({"PMD.ExcessivePublicCount", "PMD.TooManyMethods"})
+@SuppressWarnings({ "PMD.ExcessivePublicCount", "PMD.TooManyMethods" })
 public class DbcpProxyStatement<S extends Statement> implements ProxyStatement<S> {
 
     private final S delegate;
@@ -42,28 +42,10 @@ public class DbcpProxyStatement<S extends Statement> implements ProxyStatement<S
         this.connection = connection;
     }
 
-    protected static <S extends Statement> DbcpProxyStatement<?> build(
-            final DbcpProxyConnection connection, final S delegate) {
+    protected static <S extends Statement> DbcpProxyStatement<?> build(final DbcpProxyConnection connection,
+        final S delegate)
+    {
         return new DbcpProxyStatement<>(connection, delegate);
-    }
-
-    @Override
-    @SuppressWarnings("PMD.CloseResource")
-    public S getInnermostDelegate() {
-        S s = getDelegate();
-        while (s instanceof JdbcObjectProxy) {
-            JdbcObjectProxy<S> other = (JdbcObjectProxy<S>) s;
-            s = other.getDelegate();
-            if (this == s) { //NOPMD - suppressed CompareObjectsWithEquals - no innermost delegate found!
-                return null;
-            }
-        }
-
-        if (s instanceof DelegatingStatement) {
-            s = (S) ((DelegatingStatement) s).getInnermostDelegate();
-        }
-
-        return s;
     }
 
     @Override
@@ -84,6 +66,25 @@ public class DbcpProxyStatement<S extends Statement> implements ProxyStatement<S
     @Override
     public ResultSet getGeneratedKeys() throws SQLException {
         return DbcpProxyResultSet.build(this, getDelegate().getGeneratedKeys());
+    }
+
+    @Override
+    @SuppressWarnings("PMD.CloseResource")
+    public S getInnermostDelegate() {
+        S s = getDelegate();
+        while (s instanceof JdbcObjectProxy) {
+            JdbcObjectProxy<S> other = (JdbcObjectProxy<S>) s;
+            s = other.getDelegate();
+            if (this == s) { //NOPMD - suppressed CompareObjectsWithEquals - no innermost delegate found!
+                return null;
+            }
+        }
+
+        if (s instanceof DelegatingStatement) {
+            s = (S) ((DelegatingStatement) s).getInnermostDelegate();
+        }
+
+        return s;
     }
 
     @Override

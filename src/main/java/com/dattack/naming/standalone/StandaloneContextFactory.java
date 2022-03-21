@@ -25,6 +25,7 @@ import org.apache.commons.configuration.PropertyConverter;
 import org.apache.commons.lang.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -47,25 +48,23 @@ import javax.naming.spi.InitialContextFactory;
  */
 public final class StandaloneContextFactory implements InitialContextFactory {
 
+    private static final String CLASSPATH_DIRECTORY_PROPERTY =
+        StandaloneContextFactory.class.getName() + ".classpath.directory";
     private static final Logger LOGGER = LoggerFactory.getLogger(StandaloneContextFactory.class);
-
-    private static final String CLASSPATH_DIRECTORY_PROPERTY = StandaloneContextFactory.class.getName()
-            + ".classpath.directory";
-
-    private static final String RESOURCES_DIRECTORY_PROPERTY = StandaloneContextFactory.class.getName()
-            + ".resources.directory";
+    private static final String RESOURCES_DIRECTORY_PROPERTY =
+        StandaloneContextFactory.class.getName() + ".resources.directory";
 
     private static volatile Context context;
 
     private static Context createInitialContext(final File dir, final Map<?, ?> environment,
-            final CompositeConfiguration configuration) throws NamingException {
-
+        final CompositeConfiguration configuration) throws NamingException
+    {
         LOGGER.debug("Scanning directory '{}' for JNDI resources.", dir);
         try {
             final StandaloneContext ctx = new StandaloneContext(environment);
             final NamingLoader loader = new NamingLoader();
-            final Collection<File> extraClasspath = FilesystemUtils
-                    .locateFiles(configuration.getList(CLASSPATH_DIRECTORY_PROPERTY));
+            final Collection<File> extraClasspath =
+                FilesystemUtils.locateFiles(configuration.getList(CLASSPATH_DIRECTORY_PROPERTY));
 
             FilesystemClassLoaderUtils.ensureClassLoaded(new HashSet<>(extraClasspath));
             loader.loadDirectory(dir, ctx);
@@ -90,22 +89,24 @@ public final class StandaloneContextFactory implements InitialContextFactory {
         return configuration;
     }
 
-    private static File getResourcesDirectory(final CompositeConfiguration configuration)
-            throws ConfigurationException {
+    private static File getResourcesDirectory(
+        final CompositeConfiguration configuration) throws ConfigurationException
+    {
 
-        final Object configDir = PropertyConverter.interpolate(configuration.getProperty(RESOURCES_DIRECTORY_PROPERTY),
-                configuration);
+        final Object configDir =
+            PropertyConverter.interpolate(configuration.getProperty(RESOURCES_DIRECTORY_PROPERTY), configuration);
 
         if (configDir == null) {
             throw new ConfigurationException(
-                    String.format("JNDI configuration error: missing property '%s'", RESOURCES_DIRECTORY_PROPERTY));
+                String.format("JNDI configuration error: missing property '%s'", RESOURCES_DIRECTORY_PROPERTY));
         }
 
         return FilesystemUtils.locateFile(configDir.toString());
     }
 
     private static Context loadInitialContext(final Map<?, ?> environment) // NOPMD by cvarela
-            throws NamingException {
+        throws NamingException
+    {
 
         LOGGER.debug("loadInitialContext: '{}'", environment);
         final CompositeConfiguration configuration = getConfiguration(environment);
@@ -116,7 +117,7 @@ public final class StandaloneContextFactory implements InitialContextFactory {
         }
 
         throw new ConfigurationException(
-                String.format("JNDI configuration error: the directory does not exists '%s'", dir));
+            String.format("JNDI configuration error: the directory does not exists '%s'", dir));
     }
 
     @Override
@@ -136,8 +137,7 @@ public final class StandaloneContextFactory implements InitialContextFactory {
     private Map<?, ?> getDefaultProperties(final Map<?, ?> environment) {
 
         final Map<String, String> table = new ConcurrentHashMap<>();
-        environment.forEach((key, value) -> table.put(Objects.toString(key),
-                Objects.toString(value)));
+        environment.forEach((key, value) -> table.put(Objects.toString(key), Objects.toString(value)));
 
         setDefaultValue(table, "jndi.syntax.direction", "left_to_right");
         setDefaultValue(table, "jndi.syntax.separator", "/");

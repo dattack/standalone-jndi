@@ -65,14 +65,13 @@ import javax.sql.DataSource;
  */
 public final class DataSourceFactory implements ResourceFactory<DataSource> {
 
+    private static final String DEFAULT_PRIVATE_KEY = "id_rsa";
+    private static final String ENCRYPT_PREFIX = "encrypt";
     private static final Logger LOGGER = LoggerFactory.getLogger(DataSourceFactory.class);
 
-    private static final String ENCRYPT_PREFIX = "encrypt";
-    private static final String DEFAULT_PRIVATE_KEY = "id_rsa";
-
-    private static String getMandatoryProperty(final AbstractConfiguration configuration, final String propertyName)
-            throws ConfigurationException {
-
+    private static String getMandatoryProperty(final AbstractConfiguration configuration,
+        final String propertyName) throws ConfigurationException
+    {
         final String value = configuration.getString(propertyName);
         if (value == null) {
             throw new ConfigurationException(String.format("Missing property '%s'", propertyName));
@@ -80,17 +79,17 @@ public final class DataSourceFactory implements ResourceFactory<DataSource> {
         return value;
     }
 
-    private static String decrypt(final String value, final PrivateKey privateKey, final String jndiName)
-            throws DattackSecurityException, NullPointerException {
-
+    private static String decrypt(final String value, final PrivateKey privateKey,
+        final String jndiName) throws DattackSecurityException, NullPointerException
+    {
         String plainText;
         if (StringUtils.startsWithIgnoreCase(value, ENCRYPT_PREFIX)) {
-            Objects.requireNonNull(privateKey, //
-                    String.format("A private key is required to decrypt the datasource configuration (JNDI name: %s)",
-                            jndiName));
+            Objects.requireNonNull(privateKey, String.format(
+                "A private key is required to decrypt the datasource configuration (JNDI name: %s)", jndiName));
             String encryptedValue = value.substring(ENCRYPT_PREFIX.length() + 1);
-            plainText = new String(RsaUtils.decryptBase64(encryptedValue.getBytes(Charset.defaultCharset()),
-                    privateKey), Charset.defaultCharset());
+            plainText =
+                new String(RsaUtils.decryptBase64(encryptedValue.getBytes(Charset.defaultCharset()), privateKey),
+                           Charset.defaultCharset());
         } else {
             plainText = value;
         }
@@ -131,22 +130,20 @@ public final class DataSourceFactory implements ResourceFactory<DataSource> {
 
             final PrivateKey privateKey = getPrivateKey(jndiName, configuration);
 
-            DataSourceConfig dataSourceConfig = new DataSourceConfig()
-                    .withJndiName(jndiName)
-                    .withDriver(decrypt(getMandatoryProperty(configuration, CommonConstants.DRIVER_KEY), //
+            DataSourceConfig dataSourceConfig = new DataSourceConfig().withJndiName(jndiName).withDriver(
+                    decrypt(getMandatoryProperty(configuration, CommonConstants.DRIVER_KEY), //
                             privateKey, jndiName)) //
-                    .withUrl(decrypt(
-                            getMandatoryProperty(configuration, CommonConstants.URL_KEY), //
-                            privateKey, jndiName)) //
-                    .withUser(decrypt(configuration.getString(CommonConstants.USERNAME_KEY), //
-                            privateKey, jndiName)) //
-                    .withPassword(decrypt(configuration.getString(CommonConstants.PASSWORD_KEY), //
-                            privateKey, jndiName)) //
-                    .withProperties(properties);
+                .withUrl(decrypt(getMandatoryProperty(configuration, CommonConstants.URL_KEY), //
+                                 privateKey, jndiName)) //
+                .withUser(decrypt(configuration.getString(CommonConstants.USERNAME_KEY), //
+                                  privateKey, jndiName)) //
+                .withPassword(decrypt(configuration.getString(CommonConstants.PASSWORD_KEY), //
+                                      privateKey, jndiName)) //
+                .withProperties(properties);
 
             DataSource dataSource = null;
             LOGGER.debug("[{}] Instantiating datasource '{}'@'{}'", jndiName, dataSourceConfig.getUser(),
-                    dataSourceConfig.getUrl());
+                         dataSourceConfig.getUrl());
 
             if (!configuration.getBoolean(CommonConstants.DISABLE_POOL_KEY, false)) {
                 if (isDbcpEnabled(configuration)) {
@@ -160,19 +157,17 @@ public final class DataSourceFactory implements ResourceFactory<DataSource> {
 
             if (Objects.isNull(dataSource)) {
                 LOGGER.debug("[{}] Connection pool disabled", jndiName);
-                dataSource = new SimpleDataSource(dataSourceConfig.getDriver(),
-                        dataSourceConfig.getUrl(),
-                        dataSourceConfig.getUser(),
-                        dataSourceConfig.getPassword());
+                dataSource = new SimpleDataSource(dataSourceConfig.getDriver(), dataSourceConfig.getUrl(),
+                                                  dataSourceConfig.getUser(), dataSourceConfig.getPassword());
             }
 
             // include on-connect script, if one exists
-            dataSource = decorateWithOnConnectScript(jndiName,
-                    configuration.getString(CommonConstants.ON_CONNECT_SCRIPT_KEY),
-                    dataSource);
+            dataSource =
+                decorateWithOnConnectScript(jndiName, configuration.getString(CommonConstants.ON_CONNECT_SCRIPT_KEY),
+                                            dataSource);
 
             LOGGER.info("[{}] Datasource '{}'@'{}': {}", jndiName, dataSourceConfig.getUser(),
-                    dataSourceConfig.getUrl(), dataSource.getClass());
+                        dataSourceConfig.getUrl(), dataSource.getClass());
             return dataSource;
         } catch (final DattackSecurityException e) {
             throw new SecurityConfigurationException(e);
@@ -180,17 +175,18 @@ public final class DataSourceFactory implements ResourceFactory<DataSource> {
     }
 
     private boolean isAtomikosEnabled(final CompositeConfiguration configuration) {
-        return AtomikosPoolFactory.getInstance().isAvailable()
-                && !configuration.getBoolean(CommonConstants.DISABLE_ATOMIKOS_POOL_KEY, false);
+        return AtomikosPoolFactory.getInstance().isAvailable() && !configuration.getBoolean(
+            CommonConstants.DISABLE_ATOMIKOS_POOL_KEY, false);
     }
 
     private boolean isDbcpEnabled(final CompositeConfiguration configuration) {
-        return DbcpPoolFactory.getInstance().isAvailable()
-                && !configuration.getBoolean(CommonConstants.DISABLE_DBCP_POOL_KEY, false);
+        return DbcpPoolFactory.getInstance().isAvailable() && !configuration.getBoolean(
+            CommonConstants.DISABLE_DBCP_POOL_KEY, false);
     }
 
     private DataSource decorateWithOnConnectScript(final String jndiName, final String script,
-                                                   final DataSource dataSource) {
+        final DataSource dataSource)
+    {
 
         DataSource result = dataSource;
         if (StringUtils.isNotBlank(script)) {

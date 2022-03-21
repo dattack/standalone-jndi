@@ -28,16 +28,18 @@ import java.sql.SQLException;
  * @author cvarela
  * @since 0.5
  */
-@SuppressWarnings({"PMD.TooManyMethods", "PMD.ExcessivePublicCount", "PMD.CyclomaticComplexity"})
+@SuppressWarnings({ "PMD.TooManyMethods", "PMD.ExcessivePublicCount", "PMD.CyclomaticComplexity" })
 public class DbcpProxyPreparedStatement<P extends PreparedStatement> extends DbcpProxyStatement<P>
-        implements ProxyPreparedStatement<P> {
+    implements ProxyPreparedStatement<P>
+{
 
     protected DbcpProxyPreparedStatement(final DbcpProxyConnection connection, final P delegate) {
         super(connection, delegate);
     }
 
     protected static <P extends PreparedStatement> DbcpProxyPreparedStatement<P> build(
-            final DbcpProxyConnection connection, final P delegate) {
+        final DbcpProxyConnection connection, final P delegate)
+    {
         return new DbcpProxyPreparedStatement<>(connection, delegate);
     }
 

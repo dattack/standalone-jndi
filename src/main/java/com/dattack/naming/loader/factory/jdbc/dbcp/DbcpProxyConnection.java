@@ -31,7 +31,7 @@ import java.sql.Statement;
  * @author cvarela
  * @since 0.5
  */
-@SuppressWarnings({"unused", "PMD.TooManyMethods", "PMD.ExcessivePublicCount"})
+@SuppressWarnings({ "unused", "PMD.TooManyMethods", "PMD.ExcessivePublicCount" })
 public class DbcpProxyConnection implements ProxyConnection {
 
     private final Connection delegate;
@@ -61,7 +61,8 @@ public class DbcpProxyConnection implements ProxyConnection {
     @Override
     @SuppressWarnings("PMD.CloseResource")
     public Statement createStatement(int resultSetType, int resultSetConcurrency,
-            int resultSetHoldability) throws SQLException {
+        int resultSetHoldability) throws SQLException
+    {
         Statement statement = getDelegate().createStatement(resultSetType, resultSetConcurrency, resultSetHoldability);
         return DbcpProxyStatement.build(this, statement);
     }
@@ -83,7 +84,8 @@ public class DbcpProxyConnection implements ProxyConnection {
 
     @Override
     public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency,
-            int resultSetHoldability) throws SQLException {
+        int resultSetHoldability) throws SQLException
+    {
         return doPrepareCall(getDelegate().prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability));
     }
 
@@ -99,15 +101,17 @@ public class DbcpProxyConnection implements ProxyConnection {
 
     @Override
     public PreparedStatement prepareStatement(String sql, int resultSetType,
-            int resultSetConcurrency) throws SQLException {
+        int resultSetConcurrency) throws SQLException
+    {
         return doPrepareStatement(getDelegate().prepareStatement(sql, resultSetType, resultSetConcurrency));
     }
 
     @Override
     public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency,
-            int resultSetHoldability) throws SQLException {
+        int resultSetHoldability) throws SQLException
+    {
         return doPrepareStatement(
-                getDelegate().prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability));
+            getDelegate().prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability));
     }
 
     @Override
