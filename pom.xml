@@ -20,7 +20,7 @@
         <version>7</version>
     </parent>
     <artifactId>standalone-jndi</artifactId>
-    <version>0.5</version>
+    <version>0.6-SNAPSHOT</version>
     <name>Standalone JNDI</name>
     <description>A JNDI implementation to use with your standalone applications.</description>
     <url>http://www.dattack.com</url>
