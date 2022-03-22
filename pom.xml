@@ -74,7 +74,7 @@
         <commons-dbcp.version>2.9.0</commons-dbcp.version>
         <commons-io.version>2.11.0</commons-io.version>
         <h2.version>2.0.206</h2.version>
-        <jtoolbox.version>0.6-SNAPSHOT</jtoolbox.version>
+        <jtoolbox.version>0.6</jtoolbox.version>
         <junit-extensions.version>0.1</junit-extensions.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
