@@ -17,7 +17,7 @@
     <parent>
         <groupId>com.dattack</groupId>
         <artifactId>parent</artifactId>
-        <version>7</version>
+        <version>8-SNAPSHOT</version>
     </parent>
     <artifactId>standalone-jndi</artifactId>
     <version>0.6-SNAPSHOT</version>
@@ -32,7 +32,7 @@
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
@@ -60,22 +60,16 @@
         <url>https://github.com/dattack/standalone-jndi/issues</url>
     </issueManagement>
     <ciManagement>
-        <system>Travis CI</system>
-        <url>https://travis-ci.org/dattack/standalone-jndi</url>
+        <system>GitHub</system>
+        <url>https://github.com/dattack/standalone-jndi/actions</url>
     </ciManagement>
-    <distributionManagement>
-        <site>
-            <id>github</id>
-            <url>gitsite:git@https://github.com/dattack/standalone-jndi.git</url>
-        </site>
-    </distributionManagement>
     <properties>
-        <atomikos.version>5.0.8</atomikos.version>
+        <atomikos.version>5.0.9</atomikos.version>
         <commons-dbcp.version>2.9.0</commons-dbcp.version>
         <commons-io.version>2.11.0</commons-io.version>
-        <h2.version>2.1.210</h2.version>
+        <h2.version>2.1.214</h2.version>
         <jtoolbox.version>0.6</jtoolbox.version>
-        <junit-extensions.version>0.1</junit-extensions.version>
+        <junit-extensions.version>0.2-SNAPSHOT</junit-extensions.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <dependencies>
@@ -126,4 +120,26 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    <repositories>
+        <repository>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <id>ossrh-snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+        </repository>
+        <repository>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>ossrh-releases</id>
+            <url>https://oss.sonatype.org/content/repositories/releases/</url>
+        </repository>
+    </repositories>
 </project>

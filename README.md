@@ -1,13 +1,9 @@
-# Standalone JNDI
-
-[![Travis Badge](https://api.travis-ci.com/dattack/standalone-jndi.svg?branch=develop)](https://travis-ci.com/dattack/standalone-jndi/builds)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/66474e9fa3bb45c5ac545f298dc42bb8)](https://www.codacy.com/manual/dattack/standalone-jndi)
-[![Codeship Badge](https://app.codeship.com/projects/2b7c4b00-748f-0134-45cb-12948b47b8fd/status?branch=develop)](https://app.codeship.com/projects/179241)
-[![CircleCI Badge](https://circleci.com/gh/dattack/standalone-jndi.svg?style=svg)](https://circleci.com/gh/dattack/standalone-jndi)
-[![Codecov Badge](https://codecov.io/gh/dattack/standalone-jndi/branch/develop/graph/badge.svg)](https://codecov.io/gh/dattack/standalone-jndi)
+[![Build](https://github.com/dattack/standalone-jndi/actions/workflows/maven-deploy.yml/badge.svg?branch=dev)](https://github.com/dattack/standalone-jndi/actions)
 [![license](https://img.shields.io/:license-Apache-blue.svg?style=plastic-square)](LICENSE.md)
 [![Maven Central](https://img.shields.io/maven-central/v/com.dattack/standalone-jndi.svg?label=Maven%20Central)](https://search.maven.org/artifact/com.dattack/standalone-jndi)
 [![javadoc](https://javadoc.io/badge2/com.dattack/standalone-jndi/javadoc.svg)](https://javadoc.io/doc/com.dattack/standalone-jndi)
+
+# Standalone JNDI
 
 A JNDI implementation to use with your standalone applications.
 
@@ -17,13 +13,13 @@ that will be mapped with JNDI resources created in the context corresponding to 
 
 ## Where can I get the latest release?
 
-You can pull it from the central Maven repositories:
+You can pull it from the Central Maven repositories:
 
 ```xml
 <dependency>
     <groupId>com.dattack</groupId>
     <artifactId>standalone-jndi</artifactId>
-    <version>0.3</version>
+    <version>0.6-SNAPSHOT</version>
 </dependency>
 ```
 
